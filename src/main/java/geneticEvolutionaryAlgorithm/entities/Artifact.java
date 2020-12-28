@@ -5,11 +5,11 @@ import java.util.stream.IntStream;
 
 //a source file. Class in case of Java and file in case of C/Cpp
 public class Artifact extends Metricable{
-	public final String name;
+	private final String name;
 
 
 	private Component component;
-	private ArrayList<Artifact> dependencies;
+	private ArrayList<Artifact> dependencies = new ArrayList<Artifact>();
 	
 	
 	public Artifact(String name) {
@@ -75,4 +75,17 @@ public class Artifact extends Metricable{
 		this.dependencies = dependencies;
 	}
 
+	public String getName() {
+		return name;
+	}
+	
+	public String toString() {
+		String ret=this.name+"\n";
+		int count=0;
+		for(Artifact art:this.dependencies) {
+			ret+= "\n\t"+count+": "+art.getName();
+			count++;
+		}
+		return ret;
+	}
 }

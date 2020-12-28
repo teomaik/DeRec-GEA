@@ -1,6 +1,7 @@
 package geneticEvolutionaryAlgorithm.entities;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 public class DeRec_Individual extends Metricable implements Individual{
@@ -8,12 +9,17 @@ public class DeRec_Individual extends Metricable implements Individual{
 	private ArrayList<Component> components;
 	private double fitness=0;
 	
+	public DeRec_Individual(ArrayList<Artifact> classes) {	//***TODO DEBUG
+		super();
+		this.classes = classes;
+		this.removeUnwantedClasses();
+	}
+
 	public void crossover() {
 		// TODO Auto-generated method stub
 	}
 	
 	public void mutate() {
-		
 		// TODO Auto-generated method stub
 	}
 	
@@ -30,9 +36,6 @@ public class DeRec_Individual extends Metricable implements Individual{
 
 		if(components.size()<=0) {
 			throw new Exception("DeRec_Individual has 0 Components, but tried to calculate its metrics");
-//			this.setCohesion(0);
-//			this.setCoupling(0);
-//			return;
 		}
 		
 		IntStream.range(0, components.size()).parallel().forEach(i ->  components.get(i).calculate_Metrics());
@@ -51,8 +54,58 @@ public class DeRec_Individual extends Metricable implements Individual{
 	//expects an ArrayList of interconected Artifacts, with the Dependencies already set
 	public void recreateMeAsRandomIndividual() {
 		
-		// TODO Auto-generated method stub
+		int num_of_comps = this.classes.size()/20 + 3;
+		int numOfComps = ThreadLocalRandom.current().nextInt(2, num_of_comps + 1);
+
+		this.components = new ArrayList<Component>();
+		for(int i=1; i<numOfComps+1; i++) {
+			this.components.add(new Component(String.valueOf(i)));
+		}
+		
+		for(int c=0; c<this.classes.size(); c++) {
+			int componentIndex = ThreadLocalRandom.current() .nextInt(0, this.components.size());
+			this.components.get(componentIndex).addClass(this.classes.get(c));
+		}
 	}
 
+	public void removeUnwantedClasses() {
+		for(Artifact cls : this.classes) {
+			ArrayList<Artifact> newDeps = new ArrayList<Artifact>();
+			ArrayList<Artifact> classDeps = cls.getDependencies();
 
+			IntStream.range(0, classDeps.size()).parallel().forEach(i ->  {
+				boolean exists = false;
+				Artifact thisDep = classDeps.get(i);
+				for(Artifact art : this.classes) {
+					if(thisDep.equals(art)) {
+						exists = true;
+						break;
+					}
+				}
+				if(exists) {
+					newDeps.add(thisDep);
+				}
+			});
+			cls.setDependencies(newDeps);
+		}
+	}
+	
+	public String toStringComps() {
+		String ret="";
+		for(Component comp : this.components) {
+			ret += "\n"+ comp.toString();
+		}
+		return ret;
+	}
+	
+	public String toStringClasses() {
+		String ret="";
+		int i=0;
+		for(Artifact art : this.classes) {
+			ret+=i+": "+art.getName()+", comp: "+art.getComponent().getName()+"\n";
+			i++;
+		}
+		
+		return ret;
+	}
 }

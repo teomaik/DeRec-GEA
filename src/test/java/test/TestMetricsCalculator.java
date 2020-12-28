@@ -1,9 +1,10 @@
+package test;
 import calculator.MetricsCalculator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 
-public class Test {
+public class TestMetricsCalculator {
     public static void main(String[] args) throws IOException {
         String line;
         MetricsCalculator.start("C:\\Users\\temp\\Downloads\\jcommander-main");

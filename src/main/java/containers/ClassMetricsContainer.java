@@ -31,4 +31,8 @@ public class ClassMetricsContainer {
 	        it.remove(); // avoids a ConcurrentModificationException
 	    }
 	}
+
+	public HashMap<String, ClassMetrics> getClassToMetrics() {
+		return classToMetrics;
+	}
 }

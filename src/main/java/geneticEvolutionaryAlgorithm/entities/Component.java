@@ -81,4 +81,8 @@ public class Component extends Metricable {
 		
 		return ret;
 	}
+
+	public ArrayList<Artifact> getMyClasses() {
+		return myClasses;
+	}
 }

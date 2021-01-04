@@ -42,7 +42,7 @@ public class testGEA_individual {
 
 		System.out.println("\nbefore dep check");
 		System.out.println(classes.get(0).toString());
-		indv.removeUnwantedClasses();
+		indv.removeUnwantedDependencies();
 		System.out.println("\nafter dep check");
 		System.out.println(classes.get(0).toString());
 	}

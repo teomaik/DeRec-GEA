@@ -1,10 +1,9 @@
 package geneticEvolutionaryAlgorithm.entities;
 
 import java.util.ArrayList;
-import java.util.stream.IntStream;
 
 //a source file. Class in case of Java and file in case of C/Cpp
-public class Artifact extends Metricable{
+public class Artifact extends Metricable implements Comparable<Artifact>{
 	private final String name;
 
 
@@ -87,5 +86,16 @@ public class Artifact extends Metricable{
 			count++;
 		}
 		return ret;
+	}
+
+	@Override
+	public int compareTo(Artifact compareArtifact) {
+		double compareNumber = compareArtifact.getFinalFitness();
+		if (this.getFinalFitness() > compareNumber) {
+			return -1;
+		} else if (this.getFinalFitness() == compareNumber) {
+			return 0;
+		}
+		return 1;
 	}
 }

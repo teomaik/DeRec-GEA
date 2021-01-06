@@ -1,12 +1,9 @@
 package geneticEvolutionaryAlgorithm.entities;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import metrics.ClassMetrics;
 
 //a source file. Class in case of Java and file in case of C/Cpp
 public class Artifact extends Metricable implements Comparable<Artifact> {

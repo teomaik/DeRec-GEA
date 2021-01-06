@@ -21,7 +21,7 @@ public class DeRec_Individual extends Metricable implements Individual {
 	private String parentCompName;
 	private double fitness = 0;
 
-	// TODO create dependencies by getting Dimis HashTable
+	// TODO create dependencies by getting Dimi's HashTable
 	// TODO a clone method
 
 	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, HashMap<String, ClassMetrics> classesAndDeps) { // ***TODO DEBUG

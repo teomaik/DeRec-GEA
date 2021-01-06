@@ -5,6 +5,7 @@ import metrics.ClassMetrics;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class ClassMetricsContainer {
 	private final HashMap<String, ClassMetrics> classToMetrics = new HashMap<>();
@@ -32,7 +33,7 @@ public class ClassMetricsContainer {
 	    }
 	}
 
-	public HashMap<String, ClassMetrics> getClassToMetrics() {
-		return classToMetrics;
+	public Iterator<Entry<String, ClassMetrics>> getClassToMetricsIter() {
+		return classToMetrics.entrySet().iterator();
 	}
 }

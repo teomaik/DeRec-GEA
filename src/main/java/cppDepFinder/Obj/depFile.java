@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import cppDepFinder.util.fileReader;
+import cppDepFinder.util.FileReader;
 
 
 public class depFile {
@@ -86,7 +86,7 @@ public class depFile {
 		if (this.getName() == null) {
 			return;
 		}
-		fileReader fr = new fileReader();
+		FileReader fr = new FileReader();
 		String[] srcExt = fr.getSourceExtensions();
 		for (String ext : srcExt) {
 			if (this.getName().endsWith(ext)) {

@@ -12,7 +12,24 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 		
-
+		//<test
+		String progrLang = "java";
+		String prjName = "test";
+		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\jcommander-main";
+		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
+		//>test end
+		
+		try {
+			DeRecGEA.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);
+		} catch (Exception e) {
+			System.out.println("Error in main, durring test execution");
+			e.printStackTrace();
+			return;
+		}
+		
+		System.out.println("текос!");
+		
+		
 		//---------------------------------------------------------------------------------------------------------------
 //		ArrayList<Artifact> classes = new ArrayList<Artifact>();
 //		  for(int i=0; i<30; i++) {

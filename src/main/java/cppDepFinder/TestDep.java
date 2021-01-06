@@ -3,15 +3,15 @@ package cppDepFinder;
 import java.io.File;
 import java.util.List;
 
-import cppDepFinder.util.artifactList;
-import cppDepFinder.util.fileReader;
-import cppDepFinder.util.sourceDeps;
+import cppDepFinder.util.ArtifactList;
+import cppDepFinder.util.FileReader;
+import cppDepFinder.util.SourceDeps;
 import genetic_algorithm.TreeGEAController;
 import gr.uom.java.metric.probability.xml.ClassAxisObject;
 
-public class testDep {
+public class TestDep {
 
-	public testDep(String prjName, String path, String pathToDbCredFile) {
+	public TestDep(String prjName, String path, String pathToDbCredFile) {
 		if (prjName == null || prjName.isEmpty() || path == null || path.isEmpty() || pathToDbCredFile == null
 				|| pathToDbCredFile.isEmpty()) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
@@ -38,14 +38,15 @@ public class testDep {
 		File fileTmp = new File(path);
 		String redundantPath = replaceLast(path, fileTmp.getName(), "");
 		
-		System.out.println("***---> " + path);
-		System.out.println("***---> " + redundantPath);
-		fileReader fr = new fileReader();
+//		System.out.println("***---> " + path);
+//		System.out.println("***---> " + redundantPath);
+		FileReader fr = new FileReader();
+		
 		try {
 			List<File> fileList = fr.getFileListCpp(path);
-			sourceDeps srcTest = new sourceDeps(fileList);
-			System.out.println(srcTest.getResultCount());
-			artifactList artifacts = new artifactList(srcTest);
+			SourceDeps srcTest = new SourceDeps(fileList);
+//			System.out.println(srcTest.getResultCount());
+			ArtifactList artifacts = new ArtifactList(srcTest);
 			artifacts.printArtifactList();
 			artifacts.setReduntantPath(redundantPath);
 			ClassAxisObject[] cls = artifacts.getClassAxisObjectArray();

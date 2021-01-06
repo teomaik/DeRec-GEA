@@ -2,6 +2,7 @@ package cppDepFinder.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import cppDepFinder.Obj.artifactC;
@@ -9,11 +10,11 @@ import cppDepFinder.Obj.depFile;
 import gr.uom.java.metric.probability.xml.Axis;
 import gr.uom.java.metric.probability.xml.ClassAxisObject;
 
-public class artifactList {
+public class ArtifactList {
 
 	private List<artifactC> artifacts = new ArrayList<artifactC>();
 
-	public artifactList(sourceDeps srcDps) {
+	public ArtifactList(SourceDeps srcDps) {
 		if (srcDps == null) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
 		}
@@ -21,7 +22,7 @@ public class artifactList {
 		calculateArtifactDeps(srcDps);
 	}
 
-	private void initArtifactList(sourceDeps srcDps) {
+	private void initArtifactList(SourceDeps srcDps) {
 		for (depFile tmpSrcDep : srcDps.getDepFileList()) {
 			boolean exists = false;
 			for (artifactC tmpArt : this.artifacts) {
@@ -39,7 +40,7 @@ public class artifactList {
 		System.out.println("*** artifactC count: " + this.artifacts.size());
 	}
 
-	private void calculateArtifactDeps(sourceDeps srcDps) {
+	private void calculateArtifactDeps(SourceDeps srcDps) {
 		for (depFile tmpSrcDep : srcDps.getDepFileList()) {
 			for (artifactC tmpArt : this.artifacts) {
 				if (!tmpArt.isMyArtifact(tmpSrcDep)) {
@@ -101,6 +102,10 @@ public class artifactList {
 			ret[i].setAxisListForGEA(newList);
 		}
 		return ret;
+	}
+	
+	public Hashtable<String, ArrayList<String>> getClsDeps(){
+		
 	}
 
 	public void printArtifactList() {

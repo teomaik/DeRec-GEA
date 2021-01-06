@@ -22,9 +22,9 @@ public class DeRec_Individual extends Metricable implements Individual {
 	private double fitness = 0;
 
 	// TODO create dependencies by getting Dimi's HashTable
-	// TODO a clone method
+	// TODO a good clone method
 
-	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, HashMap<String, ClassMetrics> classesAndDeps) { // ***TODO DEBUG
+	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, HashMap<String, ArrayList<String>> classesAndDeps) { // ***TODO DEBUG
 		super();
 		this.createNewArtifacts(oldClasses);
 		this.findClassDependencies(classesAndDeps);
@@ -40,7 +40,7 @@ public class DeRec_Individual extends Metricable implements Individual {
 		}
 	}
 
-	public DeRec_Individual(Component component, HashMap<String, ClassMetrics> classesAndDeps) { // ***TODO DEBUG
+	public DeRec_Individual(Component component, HashMap<String, ArrayList<String>> classesAndDeps) { // ***TODO DEBUG
 		super();
 
 		this.createNewArtifacts(component.getMyClasses());
@@ -70,7 +70,7 @@ public class DeRec_Individual extends Metricable implements Individual {
 		}
 	}
 
-	private void findClassDependencies(HashMap<String, ClassMetrics> classesAndDeps) {
+	private void findClassDependencies(HashMap<String, ArrayList<String>> classesAndDeps) {
 
 		Iterator it = this.classes.entrySet().iterator();
 		while (it.hasNext()) {
@@ -78,8 +78,8 @@ public class DeRec_Individual extends Metricable implements Individual {
 
 			Artifact artifact = (Artifact) pair.getValue();
 
-			ClassMetrics cm = classesAndDeps.get(artifact.getName());
-			Iterator<String> it2 = cm.getDependenciesIterator();
+			ArrayList<String> cm = classesAndDeps.get(artifact.getName());
+			Iterator<String> it2 = cm.iterator();
 			// clses
 			while (it2.hasNext()) {
 				String dep = it2.next();
@@ -98,7 +98,9 @@ public class DeRec_Individual extends Metricable implements Individual {
 		}
 	}
 
-	public void crossover() {
+	public void crossover(Individual temp_mate) {
+		DeRec_Individual mate = (DeRec_Individual)temp_mate;
+		
 		System.out.println("****************CROSSOVER MUST BE IMPLEMENTED"); //TODO
 	}
 
@@ -321,5 +323,10 @@ public class DeRec_Individual extends Metricable implements Individual {
 
 	public ArrayList<Component> getComponents() {
 		return components;
+	}
+
+	@Override
+	public double getFitness() {
+		return this.getFinalFitness();
 	}
 }

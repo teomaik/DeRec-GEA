@@ -4,14 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class fileReader {
+public class FileReader {
 
 	private final String[] extensions = { ".c", ".h", ".cpp", ".cc", ".cp", ".cxx", ".c++", ".cu", ".hpp", ".hh", ".hp",
 			".hxx", ".h++", ".hcu" };
 
 	private final String[] sourceExtensions = { ".c", ".cpp", ".cc", ".cp", ".cxx", ".c++", ".cu" };
 
-	public fileReader() {
+	public FileReader() {
 	}
 
 	public List<File> getFileListCpp(String directoryName) {

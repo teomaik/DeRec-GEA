@@ -6,12 +6,12 @@ import java.util.List;
 
 import cppDepFinder.Obj.depFile;
 
-public class sourceDeps {
+public class SourceDeps {
 
 	private List<File> files = new ArrayList<File>();;
 	private List<depFile> depFileList = new ArrayList<depFile>();
 
-	public sourceDeps(List<File> temp) {
+	public SourceDeps(List<File> temp) {
 		if (temp == null || temp.size() == 0) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
 		}

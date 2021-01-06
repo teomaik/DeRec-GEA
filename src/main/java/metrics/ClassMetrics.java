@@ -45,6 +45,10 @@ public class ClassMetrics extends Metrics {
 	
 	}
 
+	public Iterator<String> getDependenciesIterator() {
+		return afferentCoupledClasses.iterator();
+	}
+	
 	public void test_afferentCoupledClasses() {
 		for(String s : afferentCoupledClasses){
 			System.out.println("dep class: "+s);

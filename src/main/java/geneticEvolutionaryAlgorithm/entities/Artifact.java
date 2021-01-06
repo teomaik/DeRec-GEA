@@ -1,92 +1,92 @@
 package geneticEvolutionaryAlgorithm.entities;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import metrics.ClassMetrics;
 
 //a source file. Class in case of Java and file in case of C/Cpp
-public class Artifact extends Metricable implements Comparable<Artifact>{
+public class Artifact extends Metricable implements Comparable<Artifact> {
 	private final String name;
 
-
 	private Component component;
-	private ArrayList<Artifact> dependencies = new ArrayList<Artifact>();
-	
-	
+	private Hashtable<String, Artifact> dependencies = new Hashtable<String, Artifact>();
+
 	public Artifact(String name) {
 		super();
 		this.name = name;
 	}
-	
-	//Cohesion and Coupling for class level
+
+	// Cohesion and Coupling for class level
 	public void calculate_Metrics() {
+
 		double tempCohesion = 0;
 		double tempCoupling = 0;
-		
-		for(int i=0; i<dependencies.size(); i++) {
-			if(dependencies.get(i).getComponent().equals(this.component)) {
+
+		Iterator it = this.getDependencies();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+
+			Artifact art = (Artifact) pair.getValue(); // ***DEBUG ***TODO ***TEST an leitourgei
+			if (art.getComponent().equals(this.component)) {
 				tempCohesion++;
-			}else {
+			} else {
 				tempCoupling++;
 			}
+			it.remove(); // avoids a ConcurrentModificationException
 		}
-		
 		this.setCohesion(tempCohesion);
 		this.setCoupling(tempCoupling);
 	}
 
-
 	public void addDependency(Artifact newDependency) {
-		boolean exists = false;
-		for(int i=0; i<dependencies.size(); i++) {
-			if(dependencies.get(i).equals(newDependency)) {
-				return;
-			}
+		if (this.dependencies.contains(newDependency.getName())) {
+			throw new IllegalArgumentException("Dependency for Artifact already exists");
 		}
-		this.dependencies.add(newDependency);
+		this.dependencies.put(newDependency.getName(), newDependency);
 	}
 	
-	//return is this class has a dependency on a specific class
+	public void removeDependency(Artifact newDependency) {
+		this.dependencies.remove(newDependency.getName(), newDependency);
+	}
+
+	// return is this class has a dependency on a specific class
 	public boolean isDependantOn(Artifact cls) {
-		for (int i = 0; i < dependencies.size(); i++) {
-			if(dependencies.get(i).equals(cls)) return true;
-		}
-		return false;
+		return dependencies.contains(cls.getName());
 	}
-	
+
 	public Component getComponent() {
 		return component;
 	}
-
-
 
 	public void setComponent(Component component) {
 		this.component = component;
 	}
 
-
-
-	public ArrayList<Artifact> getDependencies() {
-		return dependencies;
+	public Iterator<Entry<String, Artifact>> getDependencies() {
+		return dependencies.entrySet().iterator();
 	}
 
-
-
-	public void setDependencies(ArrayList<Artifact> dependencies) {
-		this.dependencies = dependencies;
+	public void setDependencies(Hashtable<String, Artifact> newDeps) {
+		this.dependencies = newDeps;
 	}
 
 	public String getName() {
 		return name;
 	}
-	
-	public String toString() {
-		String ret=this.name+"\n";
-		int count=0;
-		for(Artifact art:this.dependencies) {
-			ret+= "\n\t"+count+": "+art.getName();
-			count++;
-		}
-		return ret;
-	}
+
+//	public String toString() {
+//		String ret=this.name+"\n";
+//		int count=0;
+//		for(Artifact art:this.dependencies) {
+//			ret+= "\n\t"+count+": "+art.getName();
+//			count++;
+//		}
+//		return ret;
+//	}
 
 	@Override
 	public int compareTo(Artifact compareArtifact) {

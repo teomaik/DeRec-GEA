@@ -24,14 +24,14 @@ public class FileReader {
 			throw new IllegalArgumentException("Invalid values. Path must point to a directory");
 		}
 		listFilesOfInterestCpp(directoryName, tempor);
-		System.out.println("***Total number of files:" + tempor.size());
+		//System.out.println("***Total number of files:" + tempor.size());
 		return tempor;
 	}
 
 	private void listFilesOfInterestCpp(String directoryName, List<File> files) {
 		File directory = new File(directoryName);
-		System.out.println("directoryName: " + directoryName);
-		System.out.println("directoryPath: " + directory.getAbsolutePath());
+		//System.out.println("directoryName: " + directoryName);
+		//System.out.println("directoryPath: " + directory.getAbsolutePath());
 		File[] fList = directory.listFiles();
 		if (fList != null)
 			for (File file : fList) {

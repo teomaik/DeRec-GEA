@@ -9,17 +9,17 @@ import java.util.Scanner;
 import cppDepFinder.util.FileReader;
 
 
-public class depFile {
+public class DepFile {
 
 	private File file = null;
 	private String name = null;
 	private String path = null;
-	private ArrayList<depFile> deps = new ArrayList<depFile>();
+	private ArrayList<DepFile> deps = new ArrayList<DepFile>();
 	private boolean isSrc = false;
 
-	private List<depFile> filesList = new ArrayList<depFile>();
+	private List<DepFile> filesList = new ArrayList<DepFile>();
 
-	public depFile(String n, String p, File f) {
+	public DepFile(String n, String p, File f) {
 		if (n == null || n.isEmpty() || f == null || !f.exists() || p == null || p.isEmpty()) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
 		}
@@ -28,7 +28,7 @@ public class depFile {
 		this.setFile(f);
 	}
 
-	public depFile(String n, String p, File f, List<depFile> dfl) {
+	public DepFile(String n, String p, File f, List<DepFile> dfl) {
 		if (n == null || n.isEmpty() || f == null || !f.exists() || p == null || p.isEmpty()) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
 		}
@@ -45,11 +45,11 @@ public class depFile {
 		return true;
 	}
 
-	private void addNewDependancy(depFile newDep) {
+	private void addNewDependancy(DepFile newDep) {
 		if (this.getPath() == newDep.getPath()) {
 			return;
 		}
-		for (depFile x : this.getDeps()) {
+		for (DepFile x : this.getDeps()) {
 			if (x.getPath() == newDep.getPath()) {
 				return;
 			}
@@ -63,13 +63,13 @@ public class depFile {
 		}
 		int i = 0;
 		int end = this.getDeps().size();
-		ArrayList<depFile> tmpDeps = new ArrayList<depFile>();
+		ArrayList<DepFile> tmpDeps = new ArrayList<DepFile>();
 		while (i < end) {
 			if (this.getDeps().get(i).isSourceFile()) {
 				i++;
 				continue;
 			}
-			ArrayList<depFile> childDeps = this.getDeps().get(i).getDeps();
+			ArrayList<DepFile> childDeps = this.getDeps().get(i).getDeps();
 			for (int k = 0; k < childDeps.size(); k++) {
 				tmpDeps.add(childDeps.get(k));
 			}
@@ -77,7 +77,7 @@ public class depFile {
 			end = this.getDeps().size();
 			i++;
 		}
-		for (depFile tmp : tmpDeps) {
+		for (DepFile tmp : tmpDeps) {
 			this.addNewDependancy(tmp);
 		}
 	}
@@ -119,7 +119,7 @@ public class depFile {
 					String[] split = newDep.split("/");
 					newDep = split[split.length - 1];
 				}
-				for (depFile h : this.getFilesList()) {
+				for (DepFile h : this.getFilesList()) {
 					if (newDep == null || newDep.isEmpty() || h.getName() == null) {
 						continue;
 					}
@@ -130,7 +130,7 @@ public class depFile {
 			}
 			input.close();
 		} catch (Exception e) {
-			System.out.println("Exception at depFile StartDeps \n" + e.getMessage());
+			//System.out.println("Exception at depFile StartDeps \n" + e.getMessage());
 		}
 	}
 
@@ -139,10 +139,10 @@ public class depFile {
 			return;
 		}
 		String ret = this.getPath() + "   :";
-		for (depFile d : deps) {
+		for (DepFile d : deps) {
 			ret += "\n\t--->" + d.getPath();
 		}
-		System.out.println(ret);
+		//System.out.println(ret);
 	}
 
 	public String getName() {
@@ -169,15 +169,15 @@ public class depFile {
 		this.file = file;
 	}
 
-	public ArrayList<depFile> getDeps() {
+	public ArrayList<DepFile> getDeps() {
 		return deps;
 	}
 
-	private List<depFile> getFilesList() {
+	private List<DepFile> getFilesList() {
 		return filesList;
 	}
 
-	private void setFilesList(List<depFile> depFilesList) {
+	private void setFilesList(List<DepFile> depFilesList) {
 		this.filesList = depFilesList;
 	}
 

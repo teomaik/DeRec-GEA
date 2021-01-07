@@ -11,14 +11,21 @@ import geneticEvolutionaryAlgorithm.entities.DeRec_Individual;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-		
-		//<test
-		String progrLang = "java";
+
+//		// <test java
+//		String progrLang = "java";
+//		String prjName = "test";
+//		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\jcommander-main";
+//		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
+//		// >test end
+
+		// <test Cpp
+		String progrLang = "c";
 		String prjName = "test";
-		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\jcommander-main";
+		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\kameleon2";
 		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-		//>test end
-		
+		// >test end
+
 		try {
 			DeRecGEA.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);
 		} catch (Exception e) {
@@ -26,11 +33,10 @@ public class Main {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		System.out.println("текос!");
-		
-		
-		//---------------------------------------------------------------------------------------------------------------
+
+		// ---------------------------------------------------------------------------------------------------------------
 //		ArrayList<Artifact> classes = new ArrayList<Artifact>();
 //		  for(int i=0; i<30; i++) {
 //			  classes.add(new Artifact("Class_"+i+".java"));
@@ -45,7 +51,7 @@ public class Main {
 //		  
 //	    }
 
-	//---------------------------------------------------------------------------------------------------------------
+		// ---------------------------------------------------------------------------------------------------------------
 //
 //	        MetricsCalculator.start("C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\SDK4ED\\_Tools\\Probability_To_Change_GUI - Package");
 //	        

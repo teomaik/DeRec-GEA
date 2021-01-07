@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import cppDepFinder.Obj.depFile;
+import cppDepFinder.Obj.DepFile;
 
 public class SourceDeps {
 
 	private List<File> files = new ArrayList<File>();;
-	private List<depFile> depFileList = new ArrayList<depFile>();
+	private List<DepFile> depFileList = new ArrayList<DepFile>();
 
 	public SourceDeps(List<File> temp) {
 		if (temp == null || temp.size() == 0) {
@@ -21,10 +21,10 @@ public class SourceDeps {
 	}
 
 	private void testPrint() {
-		for (depFile tmp : depFileList) {
+		for (DepFile tmp : depFileList) {
 			if (!tmp.isSourceFile())
 				continue;
-			System.out.println("***#1 testPrint name " + tmp.getName() + ", deps: " + tmp.getDeps().size());
+			//System.out.println("***#1 testPrint name " + tmp.getName() + ", deps: " + tmp.getDeps().size());
 		}
 	}
 
@@ -35,17 +35,17 @@ public class SourceDeps {
 	private void createDepFiles() {
 		try {
 			for (File f : files) {
-				getDepFileList().add(new depFile(f.getName(), f.getAbsolutePath(), f, this.getDepFileList()));
+				getDepFileList().add(new DepFile(f.getName(), f.getAbsolutePath(), f, this.getDepFileList()));
 			}
-			for (depFile s : this.getDepFileList()) {
+			for (DepFile s : this.getDepFileList()) {
 				s.calcStartDeps();
 			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			//System.out.println(e.getMessage());
 		}
 	}
 
-	public List<depFile> getDepFileList() {
+	public List<DepFile> getDepFileList() {
 		return depFileList;
 	}
 }

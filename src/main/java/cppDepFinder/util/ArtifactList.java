@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import cppDepFinder.Obj.artifactC;
-import cppDepFinder.Obj.depFile;
-import gr.uom.java.metric.probability.xml.Axis;
-import gr.uom.java.metric.probability.xml.ClassAxisObject;
+import cppDepFinder.Obj.ArtifactC;
+import cppDepFinder.Obj.DepFile;
 
 public class ArtifactList {
 
-	private List<artifactC> artifacts = new ArrayList<artifactC>();
+	private List<ArtifactC> artifacts = new ArrayList<ArtifactC>();
 
 	public ArtifactList(SourceDeps srcDps) {
 		if (srcDps == null) {
@@ -23,9 +21,9 @@ public class ArtifactList {
 	}
 
 	private void initArtifactList(SourceDeps srcDps) {
-		for (depFile tmpSrcDep : srcDps.getDepFileList()) {
+		for (DepFile tmpSrcDep : srcDps.getDepFileList()) {
 			boolean exists = false;
-			for (artifactC tmpArt : this.artifacts) {
+			for (ArtifactC tmpArt : this.artifacts) {
 				if (tmpArt.isMyArtifact(tmpSrcDep)) {
 					exists = true;
 					break;
@@ -34,20 +32,20 @@ public class ArtifactList {
 			if (exists) {
 				continue;
 			}
-			this.artifacts.add(new artifactC(tmpSrcDep));
-			System.out.println(this.artifacts.get(this.artifacts.size()-1).getName()+"   added");
+			this.artifacts.add(new ArtifactC(tmpSrcDep));
+			//System.out.println(this.artifacts.get(this.artifacts.size()-1).getName()+"   added");
 		}
-		System.out.println("*** artifactC count: " + this.artifacts.size());
+		//System.out.println("*** artifactC count: " + this.artifacts.size());
 	}
 
 	private void calculateArtifactDeps(SourceDeps srcDps) {
-		for (depFile tmpSrcDep : srcDps.getDepFileList()) {
-			for (artifactC tmpArt : this.artifacts) {
+		for (DepFile tmpSrcDep : srcDps.getDepFileList()) {
+			for (ArtifactC tmpArt : this.artifacts) {
 				if (!tmpArt.isMyArtifact(tmpSrcDep)) {
 					continue;
 				}
-				for (depFile tmpDep : tmpSrcDep.getDeps()) {
-					for (artifactC tmpArt2 : this.artifacts) {
+				for (DepFile tmpDep : tmpSrcDep.getDeps()) {
+					for (ArtifactC tmpArt2 : this.artifacts) {
 						if (!tmpArt2.isMyArtifact(tmpDep)) {
 							continue;
 						}
@@ -72,11 +70,11 @@ public class ArtifactList {
 		}
 	}
 
-	private String getSutableName(artifactC tmp) {
+	private String getSutableName(ArtifactC tmp) {
 		return tmp.getPath().replace(this.redundantPath, "").replace(File.separator, ".") + tmp.getName();
 	}
 
-	private String getSutablePackageName(artifactC tmp) {
+	private String getSutablePackageName(ArtifactC tmp) {
 		String ret = tmp.getPath().replace(this.redundantPath, "").replace(File.separator, ".");
 		ret = replaceLast(ret, ".", "");
 		return ret;
@@ -86,32 +84,43 @@ public class ArtifactList {
 		return text.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
 	}
 
-	public ClassAxisObject[] getClassAxisObjectArray() {
-		ClassAxisObject[] ret = new ClassAxisObject[this.artifacts.size()];
+//	public ClassAxisObject[] getClassAxisObjectArray() {
+//		ClassAxisObject[] ret = new ClassAxisObject[this.artifacts.size()];
+//		for (int i = 0; i < this.artifacts.size(); i++) {
+//			ret[i] = new ClassAxisObject(getSutableName(this.artifacts.get(i)));
+//			ret[i].setPackageName(getSutablePackageName(this.artifacts.get(i)));
+//		}
+//		for (int i = 0; i < ret.length; i++) {
+//			List<Axis> newList = new ArrayList<Axis>();
+//			String thisName = getSutableName(this.artifacts.get(i));
+//			for (artifactC tempDep : this.artifacts.get(i).getArtifactDeps()) {
+//				newList.add(new Axis("desc", getSutableName(tempDep), thisName));
+//			}
+//
+//			ret[i].setAxisListForGEA(newList);
+//		}
+//		return ret;
+//	}
+	
+	public Hashtable<String, ArrayList<String>> getClsDeps(){
+		Hashtable<String, ArrayList<String>> ret = new Hashtable<String, ArrayList<String>>();
+		
 		for (int i = 0; i < this.artifacts.size(); i++) {
-			ret[i] = new ClassAxisObject(getSutableName(this.artifacts.get(i)));
-			ret[i].setPackageName(getSutablePackageName(this.artifacts.get(i)));
-		}
-		for (int i = 0; i < ret.length; i++) {
-			List<Axis> newList = new ArrayList<Axis>();
-			String thisName = getSutableName(this.artifacts.get(i));
-			for (artifactC tempDep : this.artifacts.get(i).getArtifactDeps()) {
-				newList.add(new Axis("desc", getSutableName(tempDep), thisName));
+			String className = getSutableName(this.artifacts.get(i));
+			ArrayList<String> deps = new ArrayList<String>();
+			
+			for (ArtifactC tempDep : this.artifacts.get(i).getArtifactDeps()) {
+				deps.add(getSutableName(tempDep));
 			}
-
-			ret[i].setAxisListForGEA(newList);
+			ret.put(className, deps);
 		}
 		return ret;
 	}
-	
-	public Hashtable<String, ArrayList<String>> getClsDeps(){
-		
-	}
 
 	public void printArtifactList() {
-		System.out.println("---> Artifact List:");
+		//System.out.println("---> Artifact List:");
 		for (int i = 0; i < this.artifacts.size(); i++) {
-			System.out.println("#" + i + ": " + this.artifacts.get(i).toString());
+			//System.out.println("#" + i + ": " + this.artifacts.get(i).toString());
 		}
 	}
 }

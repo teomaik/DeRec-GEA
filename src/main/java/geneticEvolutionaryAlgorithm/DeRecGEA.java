@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import calculator.MetricsCalculator;
+import cppDepFinder.TestDep;
 import metrics.ClassMetrics;
 
 public class DeRecGEA {
@@ -29,8 +30,7 @@ public class DeRecGEA {
 			// doStuff
 			break;
 		case "c":
-			// testDep testdep = new testDep(test_prjName, test_pathToProjectFolder,
-			// test_pathToDbCredFile);
+			artifactsWithDependencies = TestDep.getArtWithDeps(pathToProjectFolder);
 			break;
 		case "cpp":
 

@@ -46,7 +46,7 @@ public class GEA {
 		DeRec_Individual fittestIndv = population.get(0);
 		
 		int terminationCounter = 50;
-		int genCounter = 0;;
+		int genCounter = 0;
 		
 		while(terminationCounter>0) {
 			
@@ -75,7 +75,7 @@ public class GEA {
 		java.util.Iterator<Entry<String, ArrayList<String>>> it = cls.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<String, ArrayList<String>> e = it.next();
-			System.out.println("Adding to root component class: "+(String)e.getKey()); //TODO Remove this, only here for testing
+//			System.out.println("Adding to root component class: "+(String)e.getKey()); //TODO Remove this, only here for testing
 			ret.addClass(new Artifact((String)e.getKey()));
 			it.remove();
 		}

@@ -30,10 +30,12 @@ public class DeRecGEA {
 			// doStuff
 			break;
 		case "c":
+			//!!! BEWARE he who enters the cppDepFinder codebase. Legacy trash-tier code
 			artifactsWithDependencies = TestDep.getArtWithDeps(pathToProjectFolder);
 			break;
 		case "cpp":
-
+			//!!! BEWARE he who enters the cppDepFinder codebase. Legacy trash-tier code
+			artifactsWithDependencies = TestDep.getArtWithDeps(pathToProjectFolder);
 			break;
 		default:
 			throw new Exception("Invalid programming language was provided. Analysis for '"+progrLang+"' is not supported!");
@@ -53,10 +55,10 @@ public class DeRecGEA {
 			Entry<String, ClassMetrics> e = itClasses.next();
 			ArrayList<String> deps = new ArrayList<String>();
 			Iterator<String> itDeps = (Iterator<String>)e.getValue().getDependenciesIterator();
-			System.out.println("Class: "+e.getKey());
+//			System.out.println("Class: "+e.getKey());
 			while (itDeps.hasNext()) {
 				String dep = itDeps.next();
-				System.out.println("\tdep: "+dep);
+//				System.out.println("\tdep: "+dep);
 				deps.add(dep);
 				itDeps.remove();
 			}

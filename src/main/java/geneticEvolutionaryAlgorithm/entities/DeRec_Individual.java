@@ -123,22 +123,30 @@ public class DeRec_Individual extends Metricable implements Individual {
 
 		System.out.println("****************MUTATION MUST BE IMPLEMENTED"); //TODO
 		
-//		int auxiliaryMutation = times;
-//		while (auxiliaryMutation > 0) {
-//			int c = ThreadLocalRandom.current().nextInt(0, 5);
-//			switch (c) {
-//			case 0:
-//				splitComponentRandom();
-//				break;
-//			case 1:
-//				mergeComponentsSemiRand();
-//				break;
-//			}
-//			auxiliaryMutation--;
-//		}
-//		moveClassesAround(new ArrayList<Integer>(), times);
+		while(times>0) {
+			
+			int mut_type = ThreadLocalRandom.current().nextInt(0, 11);
+			
+			if(mut_type == 10) {	//Split or Merge Components
+				//do later...... or not
+			}else {
+				moveClassRandom();
+			}
+			times--;
+		}
 	}
 
+	private void moveClassesAround() {
+		if(this.components.size()==0) {
+			return;
+		}
+		Iterator it = this.classes.entrySet().iterator();
+		int compIndex = ThreadLocalRandom.current().nextInt(0, this.components.size());
+		while() {
+			
+		}
+		
+	}
 //	private void splitComponentRandom() {
 //		int idx = ThreadLocalRandom.current().nextInt(0, this.gene.length);
 //		String comp = "";

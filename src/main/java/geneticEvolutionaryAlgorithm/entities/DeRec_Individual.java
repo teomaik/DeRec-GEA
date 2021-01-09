@@ -102,6 +102,38 @@ public class DeRec_Individual extends Metricable implements Individual {
 		System.out.println("****************CROSSOVER MUST BE IMPLEMENTED"); // TODO
 	}
 
+//	private ArrayList<ClassIndividual> popCrossover(int numberOfNewChildren) {
+//		if (this.population.length < (2 * numberOfNewChildren)) {
+//			return new ArrayList<ClassIndividual>();
+//		}
+//		ArrayList<ClassIndividual> newGeneration = new ArrayList<ClassIndividual>();
+//		for (int i = 0; i < (2 * numberOfNewChildren); i = i + 2) {
+//			String[] indivComponents = new String[this.classTable.length];
+//			double[] fit1 = this.population[i].getFinalFitnessArray();
+//			double[] fit2 = this.population[i + 1].getFinalFitnessArray();
+//			int ChildNumOfComponents = RandomNumberProbability.getRandomGauss(
+//					this.population[i].getActualUsedComponents(), this.population[i + 1].getActualUsedComponents(), 2,
+//					7, 1.3);
+//			if (ChildNumOfComponents <= 1) {
+//				ChildNumOfComponents = 2;
+//			}
+//			int bestComp = 0;
+//			for (int y = 0; y < this.classTable.length; y++) {
+//				if (fit1[y] >= fit2[y]) {
+//					bestComp = Integer.parseInt(this.population[i].getComponents()[y]);
+//				} else {
+//					bestComp = Integer.parseInt(this.population[i + 1].getComponents()[y]);
+//				}
+//				if (bestComp > ChildNumOfComponents) {
+//					bestComp = ThreadLocalRandom.current().nextInt(1, ChildNumOfComponents + 1);
+//				}
+//				indivComponents[y] = String.valueOf(bestComp);
+//			}
+//			newGeneration.add(new ClassIndividual(this.classTable, indivComponents, false));
+//		}
+//		return newGeneration;
+//	}
+	
 	public void mutate() {
 		this.mutate(ThreadLocalRandom.current().nextInt(3, 5 + (this.components.size() / 10)));
 	}
@@ -253,9 +285,10 @@ public class DeRec_Individual extends Metricable implements Individual {
 			this.components.add(new Component(String.valueOf(i)));
 		}
 
+		//TODO fix this. We no longer use ArrayLists, so the use of "c" three lines down is wrong
 		for (int c = 0; c < this.artifacts.size(); c++) {
 			int componentIndex = ThreadLocalRandom.current().nextInt(0, this.components.size());
-			this.components.get(componentIndex).addClass(this.artifacts.get(c));
+			this.components.get(componentIndex).addArtifact(this.artifacts.get(c));
 		}
 	}
 
@@ -264,8 +297,6 @@ public class DeRec_Individual extends Metricable implements Individual {
 	public void removeUnwantedDependencies() {
 
 		this.artifacts.entrySet().parallelStream().forEach(e -> {
-
-			Hashtable<String, Artifact> newDeps = new Hashtable<String, Artifact>();
 
 			Iterator<Entry<String, Artifact>> it = ((Artifact) e.getValue()).getDependencies();
 			while (it.hasNext()) {

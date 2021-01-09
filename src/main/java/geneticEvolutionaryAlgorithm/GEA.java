@@ -76,7 +76,7 @@ public class GEA {
 		while(it.hasNext()){
 			Map.Entry<String, ArrayList<String>> e = it.next();
 //			System.out.println("Adding to root component class: "+(String)e.getKey()); //TODO Remove this, only here for testing
-			ret.addClass(new Artifact((String)e.getKey()));
+			ret.addArtifact(new Artifact((String)e.getKey()));
 			it.remove();
 		}
 		return ret;

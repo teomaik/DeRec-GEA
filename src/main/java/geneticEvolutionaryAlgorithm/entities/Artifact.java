@@ -38,6 +38,12 @@ public class Artifact extends Metricable implements Comparable<Artifact> {
 		this.setCohesion(tempCohesion);
 		this.setCoupling(tempCoupling);
 	}
+	
+	public void changeComponent(Component newComponent) {
+		this.component.removeArtifact(this);
+		this.component = newComponent;
+		newComponent.addArtifact(this);
+	}
 
 	public void addDependency(Artifact newDependency) {
 		if (this.dependencies.contains(newDependency.getName())) {

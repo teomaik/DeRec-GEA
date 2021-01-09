@@ -5,18 +5,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
-import metrics.ClassMetrics;
-
 public class DeRec_Individual extends Metricable implements Individual {
 	// final static HashMap<String, ClassMetrics> classesAndDeps;
 
-	private Hashtable<String, Artifact> classes;
+	private Hashtable<String, Artifact> artifacts;
 	private ArrayList<Component> components;
 	private String parentCompName;
 	private double fitness = 0;
@@ -24,14 +21,15 @@ public class DeRec_Individual extends Metricable implements Individual {
 	// TODO create dependencies by getting Dimi's HashTable
 	// TODO a good clone method
 
-	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, HashMap<String, ArrayList<String>> classesAndDeps) { // ***TODO DEBUG
+	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, HashMap<String, ArrayList<String>> classesAndDeps) { // ***TODO
+																															// DEBUG
 		super();
 		this.createNewArtifacts(oldClasses);
 		this.findClassDependencies(classesAndDeps);
 
-		//this.removeUnwantedDependencies();
+		// this.removeUnwantedDependencies();
 		this.recreateMeAsRandomIndividual();
-		
+
 		try {
 			this.calculate_Metrics();
 		} catch (Exception e) {
@@ -46,9 +44,9 @@ public class DeRec_Individual extends Metricable implements Individual {
 		this.createNewArtifacts(component.getMyClasses());
 		this.findClassDependencies(classesAndDeps);
 		parentCompName = component.getName();
-		//this.removeUnwantedDependencies();
+		// this.removeUnwantedDependencies();
 		this.recreateMeAsRandomIndividual();
-		
+
 		try {
 			this.calculate_Metrics();
 		} catch (Exception e) {
@@ -58,21 +56,21 @@ public class DeRec_Individual extends Metricable implements Individual {
 	}
 
 	private void createNewArtifacts(Hashtable<String, Artifact> oldClasses) { // TODO na pairnei Hashtable
-		this.classes = new Hashtable<String, Artifact>();
+		this.artifacts = new Hashtable<String, Artifact>();
 
 		Iterator it = oldClasses.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 			String className = (String) pair.getKey();
 			// creares new Artifact
-			this.classes.put(className, new Artifact(className));
+			this.artifacts.put(className, new Artifact(className));
 			it.remove(); // avoids a ConcurrentModificationException
 		}
 	}
 
 	private void findClassDependencies(HashMap<String, ArrayList<String>> classesAndDeps) {
 
-		Iterator it = this.classes.entrySet().iterator();
+		Iterator it = this.artifacts.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
 
@@ -83,13 +81,13 @@ public class DeRec_Individual extends Metricable implements Individual {
 			// clses
 			while (it2.hasNext()) {
 				String dep = it2.next();
-				if (!this.classes.contains(dep)) {
+				if (!this.artifacts.contains(dep)) {
 					it2.remove(); // avoids a ConcurrentModificationException
 					continue;
 				}
 
 				// adds an Artifact as a dependency to a class
-				this.classes.get(artifact.getName()).addDependency(this.classes.get(dep));
+				this.artifacts.get(artifact.getName()).addDependency(this.artifacts.get(dep));
 
 				it2.remove(); // avoids a ConcurrentModificationException
 			}
@@ -99,21 +97,25 @@ public class DeRec_Individual extends Metricable implements Individual {
 	}
 
 	public void crossover(Individual temp_mate) {
-		DeRec_Individual mate = (DeRec_Individual)temp_mate;
-		
-		System.out.println("****************CROSSOVER MUST BE IMPLEMENTED"); //TODO
+		DeRec_Individual mate = (DeRec_Individual) temp_mate;
+
+		System.out.println("****************CROSSOVER MUST BE IMPLEMENTED"); // TODO
 	}
 
 	public void mutate() {
 		this.mutate(ThreadLocalRandom.current().nextInt(3, 5 + (this.components.size() / 10)));
 	}
-	
+
 	public void mutate(int times) {
+		if (this.components.size() <= 1 || this.artifacts.size()<=2) {
+			return;
+		}
+		
 		ArrayList<Artifact> classesList = new ArrayList<Artifact>();
-		Iterator<Entry<String, Artifact>> it = this.classes.entrySet().iterator();
+		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
-			classesList.add((Artifact)pair.getValue());
+			classesList.add((Artifact) pair.getValue());
 		}
 		Collections.sort(classesList);
 
@@ -121,32 +123,42 @@ public class DeRec_Individual extends Metricable implements Individual {
 			times = 3;
 		}
 
-		System.out.println("****************MUTATION MUST BE IMPLEMENTED"); //TODO
-		
-		while(times>0) {
-			
+		System.out.println("****************MUTATION MUST BE COMPLETED"); // TODO
+
+		while (times > 0) {
+
 			int mut_type = ThreadLocalRandom.current().nextInt(0, 11);
-			
-			if(mut_type == 10) {	//Split or Merge Components
-				//do later...... or not
-			}else {
-				moveClassRandom();
+
+			if (mut_type == 10) { // Split or Merge Components
+				// do later...... or not
+			} else {
+				moveClassRandom(classesList);
 			}
 			times--;
 		}
 	}
 
-	private void moveClassesAround() {
-		if(this.components.size()==0) {
+	private void moveClassRandom(ArrayList<Artifact> classesList) {
+		
+		if(this.components.size()<2) {
 			return;
 		}
-		Iterator it = this.classes.entrySet().iterator();
-		int compIndex = ThreadLocalRandom.current().nextInt(0, this.components.size());
-		while() {
-			
+		
+		int artIdx = ThreadLocalRandom.current().nextInt(classesList.size()/2, classesList.size());
+		Artifact art = classesList.get(artIdx);
+		
+		int newComp = ThreadLocalRandom.current().nextInt(0, this.components.size());
+		while(art.getComponent().equals(this.components.get(newComp))) {
+			newComp = ThreadLocalRandom.current().nextInt(0, this.components.size());		
 		}
 		
+		changeArtifactsComponent(art, this.components.get(newComp));
 	}
+	
+	private void changeArtifactsComponent(Artifact art, Component newComponent) {
+		art.changeComponent(newComponent);
+	}
+	
 //	private void splitComponentRandom() {
 //		int idx = ThreadLocalRandom.current().nextInt(0, this.gene.length);
 //		String comp = "";
@@ -202,43 +214,6 @@ public class DeRec_Individual extends Metricable implements Individual {
 //		this.tidyUp();
 //	}
 //
-//	private void moveClassesAround(List<Integer> exclude, int times) {
-//		this.checkComponentValidity();
-//		double finFitLowest = this.finalFitnessArray[0];
-//		int idxLowest = 0;
-//		for (int i = 1; i < this.gene.length; i++) {
-//			if (finFitLowest < this.finalFitnessArray[i]) {
-//				boolean flag = true;
-//				for (Integer idx : exclude) {
-//					if (i == idx) {
-//						flag = false;
-//						break;
-//					}
-//				}
-//				if (!flag) {
-//					continue;
-//				}
-//				finFitLowest = this.finalFitnessArray[i];
-//				idxLowest = i;
-//				exclude.add(i);
-//			}
-//			i++;
-//		}
-//		String oldComp = this.components[idxLowest];
-//		int numOfComps = this.actualUsedComponents;
-//		String newComp = "" + ThreadLocalRandom.current().nextInt(1, numOfComps + 1);
-//		if (numOfComps > 1) {
-//			while (newComp.equals(oldComp)) {
-//				newComp = "" + ThreadLocalRandom.current().nextInt(1, numOfComps + 1);
-//			}
-//		}
-//		this.components[idxLowest] = newComp;
-//		times--;
-//		this.tidyUp();
-//		if (times > 0) {
-//			moveClassesAround(exclude, times);
-//		}
-//	}
 
 	// Individual's fitness
 	public void calculateFitness() throws Exception {
@@ -270,7 +245,7 @@ public class DeRec_Individual extends Metricable implements Individual {
 	// already set
 	public void recreateMeAsRandomIndividual() {
 
-		int num_of_comps = this.classes.size() / 20 + 3;
+		int num_of_comps = this.artifacts.size() / 20 + 3;
 		int numOfComps = ThreadLocalRandom.current().nextInt(2, num_of_comps + 1);
 
 		this.components = new ArrayList<Component>();
@@ -278,9 +253,9 @@ public class DeRec_Individual extends Metricable implements Individual {
 			this.components.add(new Component(String.valueOf(i)));
 		}
 
-		for (int c = 0; c < this.classes.size(); c++) {
+		for (int c = 0; c < this.artifacts.size(); c++) {
 			int componentIndex = ThreadLocalRandom.current().nextInt(0, this.components.size());
-			this.components.get(componentIndex).addClass(this.classes.get(c));
+			this.components.get(componentIndex).addClass(this.artifacts.get(c));
 		}
 	}
 
@@ -288,7 +263,7 @@ public class DeRec_Individual extends Metricable implements Individual {
 	// experiment (the dependencies should be added before the end of the GEA) TODO
 	public void removeUnwantedDependencies() {
 
-		this.classes.entrySet().parallelStream().forEach(e -> {
+		this.artifacts.entrySet().parallelStream().forEach(e -> {
 
 			Hashtable<String, Artifact> newDeps = new Hashtable<String, Artifact>();
 
@@ -297,10 +272,10 @@ public class DeRec_Individual extends Metricable implements Individual {
 				Map.Entry pair = (Map.Entry) it.next();
 				Artifact art = (Artifact) pair.getValue(); // ***DEBUG ***TODO ***TEST an leitourgei
 
-				if(!this.classes.contains(art.getName())) {
+				if (!this.artifacts.contains(art.getName())) {
 					((Artifact) e.getValue()).removeDependency(art);
 				}
-				
+
 				it.remove(); // avoids a ConcurrentModificationException
 			}
 

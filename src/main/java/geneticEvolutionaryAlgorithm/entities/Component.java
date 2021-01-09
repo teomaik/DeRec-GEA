@@ -57,16 +57,16 @@ public class Component extends Metricable {
 	}
 	
 	// find if the component contains a specific class
-	public boolean hasClass(Artifact cls) {
+	public boolean containsArtifact(Artifact cls) {
 		return this.myClasses.contains(cls.getName());
 	}
 
-	public void remove(Artifact cls) {
+	public void removeArtifact(Artifact cls) {
 		this.myClasses.remove(cls.getName(), cls);
 	}
 
-	public void addClass(Artifact cls) {
-		if (!this.hasClass(cls)) {
+	public void addArtifact(Artifact cls) {
+		if (!this.containsArtifact(cls)) {
 			this.myClasses.put(cls.getName(), cls);
 			cls.setComponent(this);
 		}

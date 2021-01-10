@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Component extends Metricable {
+public class Component extends Metricable implements Comparable<Component>{
 
 	private String name;
 
@@ -38,7 +38,7 @@ public class Component extends Metricable {
 			tempCohesion += myClasses.get(pair.getKey()).getCohesion(); // ***DEBUG ***TODO ***TEST an leitourgei
 			tempCoupling += myClasses.get(pair.getKey()).getCoupling(); // ***DEBUG ***TODO ***TEST an leitourgei
 
-			it.remove(); // avoids a ConcurrentModificationException
+			//it.remove(); // avoids a ConcurrentModificationException
 		}
 
 		this.setCohesion(tempCohesion / myClasses.size());
@@ -95,6 +95,10 @@ public class Component extends Metricable {
 //		return ret;
 //	}
 
+	public int getNumberOfClasses() {
+		return this.myClasses.size();
+	}
+	
 	public Iterator<Entry<String, Artifact>> getMyClassesIterator() {
 		return myClasses.entrySet().iterator();
 	}
@@ -109,5 +113,16 @@ public class Component extends Metricable {
 
 	public void setMyComponents(ArrayList<Component> myComponents) {
 		this.myComponents = myComponents;
+	}
+
+	@Override
+	public int compareTo(Component other) {
+		double compareNumber = other.getFinalFitness();
+		if (this.getFinalFitness() > compareNumber) {
+			return -1;
+		} else if (this.getFinalFitness() == compareNumber) {
+			return 0;
+		}
+		return 1;
 	}
 }

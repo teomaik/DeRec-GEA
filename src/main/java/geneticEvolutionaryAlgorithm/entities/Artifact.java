@@ -33,7 +33,7 @@ public class Artifact extends Metricable implements Comparable<Artifact> {
 			} else {
 				tempCoupling++;
 			}
-			it.remove(); // avoids a ConcurrentModificationException
+			//it.remove(); // avoids a ConcurrentModificationException
 		}
 		this.setCohesion(tempCohesion);
 		this.setCoupling(tempCoupling);

@@ -44,6 +44,10 @@ public class DeRecGEA {
 		GEA gea = new GEA(artifactsWithDependencies);
 		boolean result = gea.startGEA();
 		
+		if(result == false) {
+			System.out.println("Something went wrong durring execution");
+		}
+		
 		return true;
 	}
 
@@ -60,11 +64,11 @@ public class DeRecGEA {
 				String dep = itDeps.next();
 //				System.out.println("\tdep: "+dep);
 				deps.add(dep);
-				itDeps.remove();
+				//itDeps.remove();
 			}
 			
 			ret.put(e.getKey(), deps);
-			itClasses.remove();
+			//itClasses.remove();
 		}
 		
 		return ret;

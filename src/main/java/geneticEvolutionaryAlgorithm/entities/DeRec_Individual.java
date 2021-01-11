@@ -24,24 +24,12 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 
 	public DeRec_Individual(Component component, Hashtable<String, ArrayList<String>> classesAndDeps) { // ***TODO DEBUG
 		super();
+		this.components = new ArrayList<Component>();
+		this.artifacts = new Hashtable<String, Artifact>();
 
 		this.baseClasses = classesAndDeps;
 		this.createNewArtifacts(component.getMyClasses());
-		
-//		System.out.println("classesAndDeps size: "+classesAndDeps.size());
-//		Iterator<Entry<String, ArrayList<String>>> it = classesAndDeps.entrySet().iterator();
-//		while(it.hasNext()) {
-//			Map.Entry<String, ArrayList<String>> e = (Map.Entry<String, ArrayList<String>>)it.next();
-//			System.out.println("Class: "+e.getKey());
-//			for(String s : e.getValue()) {
-//				System.out.println("\tdep: "+s);
-//			}
-//		}
-//		if(!it.hasNext()) {
-//			int i=0;
-//			i = 3/i;
-//		}
-		
+
 		this.findClassDependencies(classesAndDeps);
 		parentCompName = component.getName();
 		// this.removeUnwantedDependencies();
@@ -50,31 +38,49 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 		try {
 			this.calculate_Metrics();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+			int i = 0;
+			i = 3 / i;
 		}
 	}
 
 	public DeRec_Individual(Hashtable<String, Artifact> oldClasses, Hashtable<String, ArrayList<String>> classesAndDeps,
 			HashMap<String, ArrayList<String>> comps) { // ***TODO
 		super();
+		this.components = new ArrayList<Component>();
+		this.artifacts = new Hashtable<String, Artifact>();
 
 		this.baseClasses = classesAndDeps;
 		this.createNewArtifacts(oldClasses);
 		this.findClassDependencies(classesAndDeps);
 		// this.removeUnwantedDependencies();
+
 		try {
 			this.createGivenStructure(comps);
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.out.println(e1.getMessage());
+			int i = 0;
+			i = 3 / i;
 		}
-
+		
+//		Iterator<Entry<String, ArrayList<String>>> it = comps.entrySet().iterator();
+//		while (it.hasNext()) {
+//			Map.Entry<String, ArrayList<String>> e = (Map.Entry<String, ArrayList<String>>) it.next();
+//			System.out.println("comp: " + e.getKey());
+//			for (String dep : e.getValue()) {
+//				System.out.println("\tdep: " + dep);
+//			}
+//		}
+//
+//		int y = 0;
+//		y = 3 / y;
+		
 		try {
 			this.calculate_Metrics();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+			int i = 0;
+			i = 3 / i;
 		}
 	}
 
@@ -83,7 +89,7 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 		while (it.hasNext()) {
 			Map.Entry<String, ArrayList<String>> e = (Map.Entry<String, ArrayList<String>>) it.next();
 			Component newComp = new Component(e.getKey());
-			this.components.add(newComp);
+
 			ArrayList<String> artsComp = e.getValue();
 			for (String art : artsComp) {
 				if (this.artifacts.get(art) == null) {
@@ -92,100 +98,111 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 				newComp.addArtifact(this.artifacts.get(art));
 			}
 
-			//it.remove();
+			if (newComp.getNumberOfClasses() == 0) {
+				continue;
+			}
+			this.components.add(newComp);
+			// it.remove();
 		}
 	}
 
 	private void createNewArtifacts(Hashtable<String, Artifact> oldClasses) { // TODO na pairnei Hashtable
 		this.artifacts = new Hashtable<String, Artifact>();
 
-		System.out.println("OLDCLASSES size: "+oldClasses.size());
-		
 		Iterator<Entry<String, Artifact>> it = oldClasses.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
 			String className = (String) pair.getKey();
 			// creares new Artifact
 			this.artifacts.put(className, new Artifact(className));
-			//it.remove(); // avoids a ConcurrentModificationException
+			// it.remove(); // avoids a ConcurrentModificationException
 		}
 	}
 
 	private void findClassDependencies(Hashtable<String, ArrayList<String>> classesAndDeps) {
 
-		System.out.println("classesAndDeps size: "+classesAndDeps.size());
-		
 		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
 
 			Artifact artifact = pair.getValue();
 
-			if(!classesAndDeps.contains(artifact.getName())) {
-				System.out.println("classesAndDeps does not contain: "+artifact.getName());
-			}
-//			if(!classesAndDeps.contains(pair.getKey())) {
-//				System.out.println("classesAndDeps does not contain: "+pair.getKey());
-//			}
-			
 			ArrayList<String> deps = classesAndDeps.get(artifact.getName());
-//			if(deps==null) {
-//				System.out.println("CM is null");
-//			}
-//			if(deps.isEmpty()) {
-//				System.out.println("CM is empty");
-//			}
+
 			Iterator<String> it2 = deps.iterator();
 			// clses
 			while (it2.hasNext()) {
 				String dep = it2.next();
-				if (!this.artifacts.contains(dep)) {
-					//it2.remove(); // avoids a ConcurrentModificationException
+				if (!this.artifacts.containsKey(dep)) {
+					// it2.remove(); // avoids a ConcurrentModificationException
 					continue;
 				}
 
 				// adds an Artifact as a dependency to a class
 				this.artifacts.get(artifact.getName()).addDependency(this.artifacts.get(dep));
 
-				//it2.remove(); // avoids a ConcurrentModificationException
+				// it2.remove(); // avoids a ConcurrentModificationException
 			}
 
-			//it.remove(); // avoids a ConcurrentModificationException
+			// it.remove(); // avoids a ConcurrentModificationException
 		}
 	}
 
-	public Individual crossover(Individual temp_mate) {	//TODO TEST THIS THING!!!!!!!!!!!!!!
-		
-		System.out.println("***NEED TEST!!!!!! - DeRec_Individual.Crossover()");
-		
+	public Individual crossover(Individual temp_mate) { // TODO TEST THIS THING!!!!!!!!!!!!!!
+
 		DeRec_Individual mate = (DeRec_Individual) temp_mate;
-			
+
 		// new component structure of the resulting individual
-		HashMap<String, ArrayList<String>> childCompStructure = new HashMap<String, ArrayList<String>>(); 
-		
-		for(Component t_comp : this.components) {
-			childCompStructure.put("this_"+t_comp.getName(), new ArrayList<String>());
+		HashMap<String, ArrayList<String>> childCompStructure = new HashMap<String, ArrayList<String>>();
+
+		for (Component t_comp : this.components) {
+			childCompStructure.put("this_" + t_comp.getName(), new ArrayList<String>());
 		}
-		for(Component m_comp : mate.getComponents()) {
-			childCompStructure.put("mate_"+m_comp.getName(), new ArrayList<String>());
+		for (Component m_comp : mate.getComponents()) {
+			childCompStructure.put("mate_" + m_comp.getName(), new ArrayList<String>());
 		}
 
 		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
-		if(it.hasNext()) {
-			Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>)it.next();
-			String compName;
-			if(this.getArtifactFitness(e.getKey()) > mate.getArtifactFitness(e.getKey())) {
-				compName = "this_"+this.getArtifactComponentName(e.getKey());
-			}else {
-				compName = "mate_"+mate.getArtifactComponentName(e.getKey());
-			}
+		while (it.hasNext()) {
+			Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>) it.next();
+//			System.out.println("\t" + e.getKey() + "(" + e.getValue().getComponent().getName() + ")");
 			
+			String compName;
+			if (this.getArtifactFitness(e.getKey()) > mate.getArtifactFitness(e.getKey())) {
+				compName = "this_" + this.getArtifactComponentName(e.getKey());
+			} else {
+				compName = "mate_" + mate.getArtifactComponentName(e.getKey());
+			}
+//			System.out.println(compName);
 			ArrayList<String> arts = childCompStructure.get(compName);
+//			if(arts!=null) {
+//				System.out.println(compName+" found, has "+arts.size()+" artifacts");
+//			}
 			arts.add(e.getKey());
 			childCompStructure.put(compName, arts);
-			
-			//it.remove();
 		}
+
+//		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
+//		if (it.hasNext()) {
+//			Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>) it.next();
+//			System.out.println("Checking artifact: " + e.getKey());
+//			String compName;
+//			if (this.getArtifactFitness(e.getKey()) > mate.getArtifactFitness(e.getKey())) {
+//				compName = "this_" + this.getArtifactComponentName(e.getKey());
+//			} else {
+//				compName = "mate_" + mate.getArtifactComponentName(e.getKey());
+//			}
+//
+//			ArrayList<String> arts = childCompStructure.get(compName);
+//			arts.add(e.getKey());
+//			System.out.println("adding art '" + e.getKey() + "' to comp '" + compName + "'");
+//			childCompStructure.put(compName, arts);
+//
+//			// it.remove();
+//		}
+
+//		int y = 0;
+//		y = 3 / y;
 
 		return new DeRec_Individual(this.artifacts, this.baseClasses, childCompStructure);
 	}
@@ -193,11 +210,11 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 	public double getArtifactFitness(String artifactName) {
 		return this.artifacts.get(artifactName).getFinalFitness();
 	}
-	
+
 	public String getArtifactComponentName(String artifactName) {
 		return this.artifacts.get(artifactName).getComponent().getName();
 	}
-	
+
 	// return a HashTable with this Individuals Component Strucure. It contains the
 	// Component's name as a key, and a List with it's classes as a Value
 	public HashMap<String, ArrayList<String>> exportComponentStructure() {
@@ -209,7 +226,7 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 			while (it.hasNext()) {
 				Map.Entry<String, Artifact> e = it.next();
 				cls.add(e.getKey());
-				//it.remove();
+				// it.remove();
 			}
 			if (cls.size() == 0) {
 				continue;
@@ -229,7 +246,7 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 		this.mutate(ThreadLocalRandom.current().nextInt(3, 5 + (this.components.size() / 10)));
 	}
 
-	public void mutate(int times) {
+	private void mutate(int times) {
 		if (this.components.size() <= 1 || this.artifacts.size() <= 2) {
 			return;
 		}
@@ -239,7 +256,7 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 		while (it.hasNext()) {
 			Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
 			classesList.add((Artifact) pair.getValue());
-			//it.remove();
+			// it.remove();
 		}
 		Collections.sort(classesList);
 
@@ -247,14 +264,13 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 			times = 3;
 		}
 
-		System.out.println("****************MUTATION MUST BE COMPLETED"); // TODO
-
 		while (times > 0) {
 
 			int mut_type = ThreadLocalRandom.current().nextInt(0, 11);
 
 			if (mut_type == 10) { // Split or Merge Components
 				// do later...... or not
+//				System.out.println("**************** Split or Merge Components MUST BE COMPLETED"); // TODO
 			} else {
 				moveClassRandom(classesList);
 			}
@@ -391,18 +407,18 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 			this.components.add(new Component(String.valueOf(i)));
 		}
 
-		System.out.println("My comp number before fit_calc: "+this.components.size());
-		System.out.println("My Artifact number before fit_calc: "+this.artifacts.size());
-		
+//		System.out.println("My comp number before fit_calc: "+this.components.size());
+//		System.out.println("My Artifact number before fit_calc: "+this.artifacts.size());
+
 		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>) it.next();
 
 			int componentIndex = ThreadLocalRandom.current().nextInt(0, this.components.size());
 			this.components.get(componentIndex).addArtifact(e.getValue());
-			//it.remove();
+			// it.remove();
 		}
-		
+
 	}
 
 	// remove the depenencies of classes no longer in this instance of the
@@ -416,11 +432,11 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 				Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
 				Artifact art = (Artifact) pair.getValue(); // ***DEBUG ***TODO ***TEST an leitourgei
 
-				if (!this.artifacts.contains(art.getName())) {
+				if (!this.artifacts.containsKey(art.getName())) {
 					((Artifact) e.getValue()).removeDependency(art);
 				}
 
-				//it.remove(); // avoids a ConcurrentModificationException
+				// it.remove(); // avoids a ConcurrentModificationException
 			}
 
 		});
@@ -437,16 +453,30 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 		return ret;
 	}
 
-//	public String toStringClasses() {
-//		String ret = "";
-//		int i = 0;
-//		for (Artifact art : this.classes) {
-//			ret += i + ": " + art.getName() + ", comp: " + art.getComponent().getName() + "\n";
-//			i++;
-//		}
-//
-//		return ret;
-//	}
+	public String toStringArtifacts() {
+		String ret = "Individual\n";
+		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>) it.next();
+			ret += "\t" + e.getKey() + "(" + e.getValue().getComponent().getName() + ")\n";
+		}
+
+		return ret;
+	}
+
+	public String toStringComponents() {
+		String ret = "Individual\n";
+
+		for (Component comp : this.components) {
+			ret += "\t-" + comp.getName() + ":\n";
+			Iterator<Entry<String, Artifact>> it = comp.getMyClassesIterator();
+			while (it.hasNext()) {
+				Map.Entry<String, Artifact> e = (Map.Entry<String, Artifact>) it.next();
+				ret += "\t\t+" + e.getKey() + "\n";
+			}
+		}
+		return ret;
+	}
 
 	public ArrayList<Component> getComponents() {
 		return components;
@@ -454,7 +484,10 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 
 	@Override
 	public double getFitness() {
+		
 		return this.getFinalFitness();
+
+//		return this.components.size()/30+this.getFinalFitness();
 	}
 
 	@Override

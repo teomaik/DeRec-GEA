@@ -45,7 +45,7 @@ public class DeRecGEA {
 		boolean result = gea.startGEA();
 		
 		if(result == false) {
-			System.out.println("Something went wrong durring execution");
+			System.out.println("Something went wrong during the execution");
 		}
 		
 		return true;

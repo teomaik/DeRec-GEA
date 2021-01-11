@@ -58,7 +58,7 @@ public class Component extends Metricable implements Comparable<Component>{
 	
 	// find if the component contains a specific class
 	public boolean containsArtifact(Artifact cls) {
-		return this.myClasses.contains(cls.getName());
+		return this.myClasses.containsKey(cls.getName());
 	}
 
 	public void removeArtifact(Artifact cls) {

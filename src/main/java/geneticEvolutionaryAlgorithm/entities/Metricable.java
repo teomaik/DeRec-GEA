@@ -21,7 +21,13 @@ public class Metricable {
 		this.coupling = coupling;
 	}
 	public double getFinalFitness() {
-		this.finalFitness = cohesion-coupling;
+		if(cohesion+coupling==0) {
+			this.finalFitness = 0;
+			return 0;
+		}
+		
+		this.finalFitness = cohesion/(cohesion+coupling)-coupling/(cohesion+coupling);
+		
 		return finalFitness;
 	}
 	public void setFinalFitness(double finalFitness) {

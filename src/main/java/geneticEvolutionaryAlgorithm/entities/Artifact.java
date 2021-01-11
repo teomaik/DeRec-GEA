@@ -46,7 +46,7 @@ public class Artifact extends Metricable implements Comparable<Artifact> {
 	}
 
 	public void addDependency(Artifact newDependency) {
-		if (this.dependencies.contains(newDependency.getName())) {
+		if (this.dependencies.containsKey(newDependency.getName())) {
 			throw new IllegalArgumentException("Dependency for Artifact already exists");
 		}
 		this.dependencies.put(newDependency.getName(), newDependency);
@@ -58,7 +58,7 @@ public class Artifact extends Metricable implements Comparable<Artifact> {
 
 	// return is this class has a dependency on a specific class
 	public boolean isDependantOn(Artifact cls) {
-		return dependencies.contains(cls.getName());
+		return dependencies.containsKey(cls.getName());
 	}
 
 	public Component getComponent() {

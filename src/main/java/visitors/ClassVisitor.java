@@ -8,6 +8,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAbstractModifier;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.type.Type;
@@ -15,7 +16,6 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-import com.github.javaparser.resolution.types.ResolvedType;
 import containers.ClassMetricsContainer;
 import metrics.ClassMetrics;
 
@@ -25,28 +25,24 @@ import java.util.*;
 
 public class ClassVisitor extends VoidVisitorAdapter<Void> {
 
-    private final String myClassName;
+    private String myClassName;
     private final ClassMetricsContainer classMetricsContainer;
-    private final ClassMetrics classMetrics;
-    private final HashSet<String> efferentCoupledClasses = new HashSet<>();
+    private ClassMetrics classMetrics;
+    private final Set<String> efferentCoupledClasses = new HashSet<>();
     private String srcRoot;
 
-    private final HashSet<String> responseSet = new HashSet<>();
-    private final ArrayList<String> methodsCalled = new ArrayList<>();
+    private final Set<String> responseSet = new HashSet<>();
+    private final List<String> methodsCalled = new ArrayList<>();
 
-    ArrayList<TreeSet<String>> methodIntersection = new ArrayList<>();
+    private final List<TreeSet<String>> methodIntersection = new ArrayList<>();
 
-    public ClassVisitor(ClassOrInterfaceDeclaration jc, String srcRoot, ClassMetricsContainer classMap) {
+    public ClassVisitor(TypeDeclaration<?> jc, String srcRoot, ClassMetricsContainer classMap) {
         this.classMetricsContainer = classMap;
-        this.myClassName = jc.resolve().getQualifiedName();
-        this.classMetrics = this.classMetricsContainer
-                .getMetrics(this.myClassName);
-        this.srcRoot = srcRoot;
-    }
-
-    public ClassVisitor(EnumDeclaration jc, String srcRoot, ClassMetricsContainer classMap) {
-        this.classMetricsContainer = classMap;
-        this.myClassName = jc.resolve().getQualifiedName();
+        try {
+            this.myClassName = jc.resolve().getQualifiedName();
+        }catch (Exception e){
+            return;
+        }
         this.classMetrics = this.classMetricsContainer
                 .getMetrics(this.myClassName);
         this.srcRoot = srcRoot;
@@ -60,19 +56,18 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         if (en.isPublic())
             this.classMetrics.setPublic();
 
-        // Get package name
-        String packageName = en.resolve().getPackageName();
+        String packageName = getPackageName(en);
+
+        if (packageName == null) return;
 
         MetricsCalculator.getPackageMetricsContainer().addClassToPackage(packageName, this.myClassName, this.classMetrics);
         MetricsCalculator.getPackageMetricsContainer().addPackage(packageName);
 
         try {
-            // Get implemented types & register coupling caused by implemented types
             en.getImplementedTypes().forEach(it -> registerCoupling(it.resolve().getQualifiedName()));
         } catch (Exception ignored) {}
 
-        for (MethodDeclaration method : en.getMethods())
-            visitMethod(en, method);
+        visitAllClassMethods(en);
 
         calculateMetrics(en);
     }
@@ -87,32 +82,23 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         if (javaClass.isAbstract())
             this.classMetrics.setAbstract();
 
-        // Get package name
-        String packageName = javaClass.resolve().getPackageName();
+        String packageName = getPackageName(javaClass);
+
+        if (packageName == null) return;
 
         MetricsCalculator.getPackageMetricsContainer().addClassToPackage(packageName, this.myClassName, this.classMetrics);
         MetricsCalculator.getPackageMetricsContainer().addPackage(packageName);
 
-        String superClassName;
-        // Get superclass name
-        try {
-            superClassName = javaClass.getExtendedTypes().get(0).resolve().getQualifiedName();
-        } catch (Exception e) {
-            superClassName = "";
-        }
-        if (!superClassName.isEmpty())
-            registerCoupling(superClassName);
+        String superClassName = getSuperClassName(javaClass);
+        if (superClassName != null) registerCoupling(superClassName);
 
         try {
-            // Get implemented types & register coupling caused by implemented types
             javaClass.getImplementedTypes().forEach(it -> registerCoupling(it.resolve().getQualifiedName()));
         } catch (Exception ignored) {}
 
-        // Methods accept visitor
-        for (MethodDeclaration method : javaClass.getMethods())
-            visitMethod(javaClass, method);
+        visitAllClassMethods(javaClass);
 
-        if (!superClassName.isEmpty()) {
+        if (superClassName != null) {
             this.classMetricsContainer
                     .getMetrics(superClassName)
                     .incNoc();
@@ -120,6 +106,51 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         calculateMetrics(javaClass);
     }
 
+    /**
+     * Visit all class methods & register metrics values
+     *
+     * @param  javaClass  class or enum we are referring to
+     */
+    private void visitAllClassMethods(TypeDeclaration<?> javaClass){
+
+        for (MethodDeclaration method : javaClass.getMethods())
+            visitMethod(javaClass, method);
+    }
+
+    /**
+     * Get superclass name of class we are referring to
+     *
+     * @param  javaClass  class or enum we are refering to
+     *
+     * @return superclass name
+     */
+    private String getSuperClassName(ClassOrInterfaceDeclaration javaClass){
+        try {
+            return javaClass.getExtendedTypes().get(0).resolve().getQualifiedName();
+        } catch (Exception e) { return null; }
+    }
+
+    /**
+     * Get package name of enum we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return package name
+     */
+    private String getPackageName(TypeDeclaration<?> javaClass){
+        try{
+            return javaClass.resolve().getPackageName();
+        }catch (Exception ignored){ return null; }
+    }
+
+    /**
+     * Calculate DIT metric value for the class we are referring to
+     *
+     * @param  className the class we are referring to
+     * @param  superClass the class we are referring to
+     *
+     * @return DIT metric value
+     */
     private int calculateDit(String className, ResolvedReferenceType superClass) {
         if (className.equals("java.lang.Object"))
             return 0;
@@ -159,16 +190,23 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return dit;
     }
 
-    private int calculateAna(ClassOrInterfaceDeclaration javaClass) {
-        ArrayList<ResolvedReferenceType> ancestors = new ArrayList<>();
-        HashSet<ResolvedReferenceType> ancestorsSet = new HashSet<>();
-        if (withinAnalysisBounds(javaClass.resolve().getQualifiedName())) {
-            try {
+    /**
+     * Calculate ANA metric value for the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return ANA metric value
+     */
+    private int calculateAna(TypeDeclaration<?> javaClass) {
+        List<ResolvedReferenceType> ancestors = new ArrayList<>();
+        Set<ResolvedReferenceType> ancestorsSet = new HashSet<>();
+        try {
+            if (withinAnalysisBounds(javaClass.resolve().getQualifiedName())) {
                 ancestors.add(javaClass.resolve().getAncestors()
                         .get(javaClass.resolve().getAncestors().size() - 1));
                 ancestors.addAll(getValidInterfaces(javaClass.resolve().getAllAncestors()));
-            } catch (Exception ignored) {}
-        }
+            }
+        }catch (Exception ignored) {}
 
         for (int i = 0; i < ancestors.size(); ++i) {
             ResolvedReferenceType ancestor = ancestors.get(i);
@@ -189,10 +227,17 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return ancestorsSet.size();
     }
 
-    private float calculateDam(ClassOrInterfaceDeclaration javaClass) {
+    /**
+     * Calculate DAM metric value for the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return DAM metric value
+     */
+    private float calculateDam(TypeDeclaration<?> javaClass) {
         float public_attributes = 0.0f;
 
-        ArrayList<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
+        List<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
         float total_attributes = (float) javaClassAttribute.size();
 
         for (int i = 0; i < total_attributes; ++i) {
@@ -204,24 +249,16 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return total_attributes == 0 ? -1 : ((total_attributes - public_attributes) / total_attributes);
     }
 
-    private float calculateDam(EnumDeclaration javaClass) {
-        float public_attributes = 0.0f;
-
-        ArrayList<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
-        float total_attributes = (float) javaClassAttribute.size();
-
-        for (int i = 0; i < total_attributes; ++i) {
-            FieldDeclaration a = javaClassAttribute.get(i);
-            if ((!a.isProtected()) && (!a.isPrivate())) {
-                ++public_attributes;
-            }
-        }
-        return total_attributes == 0 ? -1 : ((total_attributes - public_attributes) / total_attributes);
-    }
-
-    private int calculateMoa(ClassOrInterfaceDeclaration javaClass) {
-        ArrayList<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
-        HashSet<String> types = new HashSet<>();
+    /**
+     * Calculate MOA metric value for the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return MOA metric value
+     */
+    private int calculateMoa(TypeDeclaration<?> javaClass) {
+        List<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
+        Set<String> types = new HashSet<>();
 
         for (FieldDeclaration field : javaClassAttribute) {
             try {
@@ -233,23 +270,20 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return types.size();
     }
 
-    private int calculateMoa(EnumDeclaration javaClass) {
-        ArrayList<FieldDeclaration> javaClassAttribute = new ArrayList<>(javaClass.getFields());
-        HashSet<String> types = new HashSet<>();
+    /**
+     * Calculate CC (Cyclomatic Complexity) metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return CC metric value
+     */
+    private double calculateWmcCc(TypeDeclaration<?> javaClass) {
 
-        for (FieldDeclaration field : javaClassAttribute) {
-            try {
-                String typeName = field.resolve().getType().describe();
-                if ((withinAnalysisBounds(typeName)))
-                    types.add(typeName);
-            }catch (Exception ignored){}
+        if (javaClass instanceof ClassOrInterfaceDeclaration){
+            ClassOrInterfaceDeclaration jc = (ClassOrInterfaceDeclaration) javaClass;
+            if (jc.isInterface()) return -1;
         }
-        return types.size();
-    }
-
-    private double calculateWmcCc(ClassOrInterfaceDeclaration javaClass) {
-        if (javaClass.isInterface())
-            return -1;
 
         List<MethodDeclaration> methods = javaClass.getMethods();
         float total_ifs = 0.0f;
@@ -271,39 +305,39 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
             return -1;
     }
 
-    private double calculateWmcCc(EnumDeclaration javaClass) {
-        List<MethodDeclaration> methods = javaClass.getMethods();
-        float total_ifs = 0.0f;
-        float valid_classes = 0.0f;
-        for (MethodDeclaration method : methods) {
-            int ifs;
-            if (!method.isAbstract() && !method.isNative()) {
-                ifs = countIfs(method) + countSwitch(method) + 1;
-                total_ifs += ifs;
-                ++valid_classes;
-            }
-        }
-        if (javaClass.getConstructors().size() == 0)
-            ++valid_classes;
-
-        if (valid_classes > 0)
-            return (total_ifs / valid_classes);
-        else
-            return -1;
-    }
-
+    /**
+     * Count how many switch statements there are within a method
+     *
+     * @param  method the method we are referring to
+     *
+     * @return switch count
+     */
     private int countSwitch(MethodDeclaration method) {
-        int count = 0;
-        for (SwitchStmt switchStmt : method.findAll(SwitchStmt.class))
-            count += switchStmt.getEntries().size();
-        return count;
+        final int[] count = {0};
+        method.findAll(SwitchStmt.class).forEach(switchStmt -> count[0] += switchStmt.getEntries().size());
+        return count[0];
     }
 
+    /**
+     * Count how many if statements there are within a method
+     *
+     * @param  method the method we are referring to
+     *
+     * @return if count
+     */
     private int countIfs(MethodDeclaration method) {
         return method.findAll(IfStmt.class).size();
     }
 
-    private int calculateSize1(ClassOrInterfaceDeclaration javaClass) {
+    /**
+     * Calculate Size1 (LOC) metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return Size1 metric value
+     */
+    private int calculateSize1(TypeDeclaration<?> javaClass) {
         int size = 0;
         for (MethodDeclaration method : javaClass.getMethods()) {
             if (method.isAbstract() || method.isNative())
@@ -317,29 +351,27 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return size;
     }
 
-    private int calculateSize1(EnumDeclaration javaClass) {
-        int size = 0;
-        for (MethodDeclaration method : javaClass.getMethods()) {
-            if (method.isAbstract() || method.isNative())
-                ++size;
-            else
-                if (method.getBegin().isPresent() && method.getEnd().isPresent())
-                    size += method.getEnd().get().line - method.getBegin().get().line + 1;
-        }
-        size += javaClass.getFields().size();
-
-        return size;
-    }
-
-    private int calculateSize2(ClassOrInterfaceDeclaration javaClass) {
+    /**
+     * Calculate Size2 (Fields + Methods size) metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return Size2 metric value
+     */
+    private int calculateSize2(TypeDeclaration<?> javaClass) {
         return javaClass.getFields().size() + javaClass.getMethods().size();
     }
 
-    private int calculateSize2(EnumDeclaration javaClass) {
-        return javaClass.getFields().size() + javaClass.getMethods().size();
-    }
-
-    private int calculateDac(ClassOrInterfaceDeclaration javaClass) {
+    /**
+     * Calculate DAC metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return DAC metric value
+     */
+    private int calculateDac(TypeDeclaration<?> javaClass) {
         int dac = 0;
         for (FieldDeclaration field : javaClass.getFields()) {
             if (field.getElementType().isPrimitiveType())
@@ -359,7 +391,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
                     }catch (FileNotFoundException ignored1){}
                     try {
                         Optional<ClassOrInterfaceDeclaration> cl = cu.getClassByName(field.getElementType().asString());
-                        if (cl.isPresent())
+                        if (!cl.isPresent())
                             continue;
                         ++dac;
                     }catch (NullPointerException ignored){}
@@ -369,39 +401,19 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return dac;
     }
 
-    private int calculateDac(EnumDeclaration javaClass) {
-        int dac = 0;
-        for (FieldDeclaration field : javaClass.getFields()) {
-            if (field.getElementType().isPrimitiveType()) continue;
-            String typeName;
-            try {
-                typeName = field.getElementType().resolve().describe();
-            } catch (Exception e) {
-                continue;
-            }
-            if (withinAnalysisBounds(typeName)) {
-                CompilationUnit cu = null;
-                try {
-                    try {
-                        String path = MetricsCalculator.getCurrentProject() + "/" + typeName.replace(".", "/") + ".java";
-                        cu = StaticJavaParser.parse(new File(path));
-                    }catch (FileNotFoundException ignored1){}
-                    try {
-                        Optional<ClassOrInterfaceDeclaration> cl = cu.getClassByName(field.getElementType().asString());
-                        if (cl.isPresent()) continue;
-                        if (cl.get().isAbstract()) ++dac;
-                    }catch (NullPointerException ignored){}
-                } catch (Exception ignored){}
-            }
-        }
-        return dac;
-    }
-
-    private double calculateCamc(ClassOrInterfaceDeclaration javaClass) {
+    /**
+     * Calculate CAMC metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return CAMC metric value
+     */
+    private double calculateCamc(TypeDeclaration<?> javaClass) {
         List<MethodDeclaration> allMethods = javaClass.getMethods();
         int num_of_methods = allMethods.size();
-        ArrayList<String> num;
-        ArrayList<String> denum = new ArrayList<>();
+        List<String> num;
+        List<String> denum = new ArrayList<>();
         double numerator = 0;
 
         for (MethodDeclaration all_method : allMethods) {
@@ -422,68 +434,51 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return (num_of_methods == 0 || denum.isEmpty()) ? -1 : numerator / (num_of_methods * denum.size());
     }
 
-    private double calculateCamc(EnumDeclaration javaClass) {
-        List<MethodDeclaration> allMethods = javaClass.getMethods();
-        int num_of_methods = allMethods.size();
-        ArrayList<String> num;
-        ArrayList<String> denum = new ArrayList<>();
-        double numerator = 0;
-
-        for (MethodDeclaration all_method : allMethods) {
-            num = new ArrayList<>();
-            List<Type> t = new ArrayList<>();
-            for (Parameter p : all_method.getParameters())
-                t.add(p.getType());
-
-            for (Type type : t) {
-                if (!num.contains(type.asString()))
-                    num.add(type.asString());
-                if (!denum.contains(type.asString()))
-                    denum.add(type.asString());
-            }
-            numerator += +num.size();
-
-        }
-        return (num_of_methods == 0 || denum.isEmpty()) ? -1 : numerator / (num_of_methods * denum.size());
+    /**
+     * Calculate NOP metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class or enum we are referring to
+     *
+     * @return NOP metric value
+     */
+    private int calculateNop(TypeDeclaration<?> javaClass) {
+        return (int) javaClass.getMethods().stream().filter(NodeWithAbstractModifier::isAbstract).count();
     }
 
-    private int calculateNop(ClassOrInterfaceDeclaration javaClass) {
-        int count = 0;
-        if (javaClass.isInterface())
-            return javaClass.getMethods().size();
-        for (MethodDeclaration method : javaClass.getMethods())
-            if (method.isAbstract())
-                ++count;
-        return count;
-    }
-
-    private int calculateNop(EnumDeclaration javaClass) {
-        int count = 0;
-        for (MethodDeclaration method : javaClass.getMethods())
-            if (method.isAbstract())
-                ++count;
-        return count;
-    }
-
+    /**
+     * Calculate MFA metric value for
+     * the class we are referring to
+     *
+     * @param  javaClass the class we are referring to
+     *
+     * @return MFA metric value
+     */
     private float calculateMfa(ClassOrInterfaceDeclaration javaClass) {
-        ArrayList<ResolvedReferenceType> ancestors = new ArrayList<>();
+        List<ResolvedReferenceType> ancestors = new ArrayList<>();
         ResolvedReferenceType superClass;
+
         try {
             superClass = javaClass.getExtendedTypes().get(0).resolve();
-        } catch (Exception e) { return 0.0F; }
+        } catch (Exception e) {
+            return 0.0F;
+        }
+
         if (superClass == null)
             return 0.0F;
+
         if (withinAnalysisBounds(superClass))
             ancestors.add(superClass);
+
         try {
             ancestors.addAll(getValidInterfaces(javaClass.resolve().getAllAncestors()));
-        }catch (UnsolvedSymbolException ignored) {}
+        }catch (UnsolvedSymbolException ignored){}
 
-        HashSet<ResolvedReferenceType> ancestorsSet = new HashSet<>();
-        ArrayList<MethodDeclaration> javaClassMethods = new ArrayList<>(javaClass.getMethods());
-        HashSet<ResolvedMethodDeclaration> ancestorMethods = new HashSet<>();
+        Set<ResolvedReferenceType> ancestorsSet = new HashSet<>();
+        List<MethodDeclaration> javaClassMethods = new ArrayList<>(javaClass.getMethods());
+        Set<ResolvedMethodDeclaration> ancestorMethods = new HashSet<>();
 
-        for (int i = 0; i < ancestors.size(); i++) {
+        for (int i = 0; i < ancestors.size(); ++i) {
             ResolvedReferenceType ancestor = ancestors.get(i);
             if (!ancestorsSet.contains(ancestor)) {
                 if (withinAnalysisBounds(ancestor)) {
@@ -502,13 +497,12 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
             }
         }
 
-        // remove all javaClass methods from ancestors
-        for (ResolvedMethodDeclaration ancestorMethod : ancestorMethods)
-            for (MethodDeclaration method : javaClassMethods)
-                try {
-                    if (ancestorMethod.getQualifiedSignature().equals(method.resolve().getQualifiedSignature()))
-                        ancestorMethods.remove(ancestorMethod);
-                } catch (Exception ignored) {}
+        /* remove all javaClass methods from ancestors */
+        try {
+            ancestorMethods.forEach(ancestorMethod -> javaClassMethods.stream()
+                    .filter(method -> ancestorMethod.getQualifiedSignature().equals(method.resolve().getQualifiedSignature()))
+                    .forEach(method -> ancestorMethods.remove(ancestorMethod)));
+        } catch (Exception ignored) {}
 
         ancestorMethods.removeIf(method -> (method.accessSpecifier().equals(AccessSpecifier.PRIVATE)) || (method.toAst().isPresent() && method.toAst().get().isConstructorDeclaration()));
         javaClassMethods.removeIf(BodyDeclaration::isConstructorDeclaration);
@@ -518,11 +512,17 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return (float) ancestorMethods.size() / (ancestorMethods.size() + javaClassMethods.size());
     }
 
+    /**
+     * Calculate LCOM metric value for
+     * the class we are referring to
+     *
+     * @return LCOM metric value
+     */
     private int calculateLCOM(){
         int lcom = 0;
         for (int i = 0; i < this.methodIntersection.size(); ++i) {
             for (int j = i + 1; j < this.methodIntersection.size(); ++j) {
-                TreeSet<?> intersection = (TreeSet<?>) (this.methodIntersection.get(i)).clone();
+                AbstractSet<?> intersection = (TreeSet<?>) (this.methodIntersection.get(i)).clone();
                 if ((!intersection.isEmpty()) || (!this.methodIntersection.isEmpty())) {
                     intersection.retainAll(this.methodIntersection.get(j));
                     if (intersection.size() == 0)
@@ -535,83 +535,96 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return this.methodIntersection.size() == 0 ? -1 : Math.max(lcom, 0);
     }
 
-    public void visitMethod(ClassOrInterfaceDeclaration javaClass, MethodDeclaration method) {
+    /**
+     * Visit the method given & register metrics values
+     *
+     * @param  javaClass the class we are referring to
+     * @param  method the method of javaClass we are referring to
+     */
+    public void visitMethod(TypeDeclaration<?> javaClass, MethodDeclaration method) {
 
         this.methodIntersection.add(new TreeSet<>());
         if (!method.isConstructorDeclaration())
             this.classMetrics.incWmc();
 
-        registerCoupling(method.resolve().getReturnType().describe());
-        incRFC(method.resolve().getQualifiedName());
+        try {
+            registerCoupling(method.resolve().getReturnType().describe());
+        }catch (Exception ignored){}
 
+        incRFC(method.resolve().getQualifiedName());
         investigateExceptions(method);
         investigateModifiers(method);
         investigateParameters(method);
         investigateInvocation(method);
         investigateFieldAccess(method, javaClass.getFields());
-
     }
 
-    public void visitMethod(EnumDeclaration en, MethodDeclaration method) {
-
-        this.methodIntersection.add(new TreeSet<>());
-        if (!method.isConstructorDeclaration())
-            this.classMetrics.incWmc();
-
-        registerCoupling(method.resolve().getReturnType().describe());
-        incRFC(method.resolve().getQualifiedName());
-
-        investigateExceptions(method);
-        investigateModifiers(method);
-        investigateParameters(method);
-        investigateInvocation(method);
-        investigateFieldAccess(method, en.getFields());
-
-    }
-
-    private void investigateFieldAccess(MethodDeclaration m, List<FieldDeclaration> classFields){
+    /**
+     * Register field access of method given
+     *
+     * @param  method the method we are referring to
+     * @param  classFields the class fields of class we are
+     *                     referring to
+     */
+    private void investigateFieldAccess(MethodDeclaration method, List<FieldDeclaration> classFields){
         try {
-            List<NameExpr> nameExpressions = m.findAll(NameExpr.class);
-            for (NameExpr expr : nameExpressions)
-                for (FieldDeclaration field : classFields)
-                    for (VariableDeclarator var : field.getVariables()) {
-                        if (var.getNameAsString().equals(expr.getNameAsString()))
-                            registerFieldAccess(expr.getNameAsString());
-                    }
+            method.findAll(NameExpr.class).forEach(expr -> classFields.forEach(classField -> classField.getVariables()
+                    .stream().filter(var -> var.getNameAsString().equals(expr.getNameAsString()))
+                    .forEach(var -> registerFieldAccess(expr.getNameAsString()))));
         } catch (Exception ignored) {}
     }
 
-    private void investigateExceptions(MethodDeclaration m){
+    /**
+     * Register exception usage of method given
+     *
+     * @param  method the method we are referring to
+     */
+    private void investigateExceptions(MethodDeclaration method){
         try {
-            for (ResolvedType exception : m.resolve().getSpecifiedExceptions())
-                registerCoupling(exception.describe());
+            method.resolve().getSpecifiedExceptions().forEach(exception -> registerCoupling(exception.describe()));
         } catch (Exception ignored) {}
     }
 
-    private void investigateModifiers(MethodDeclaration m){
-        for (Modifier mod : m.getModifiers())
-            if (mod.getKeyword().equals(Modifier.Keyword.PUBLIC))
-                this.classMetrics.incNpm();
+    /**
+     * Register modifiers usage of method given
+     *
+     * @param  method the method we are referring to
+     */
+    private void investigateModifiers(MethodDeclaration method){
+        try {
+            method.getModifiers().stream().filter(mod -> mod.getKeyword().equals(Modifier.Keyword.PUBLIC)).forEach(mod -> this.classMetrics.incNpm());
+        }catch (Exception ignored) {}
     }
 
-    private void investigateParameters(MethodDeclaration m){
+    /**
+     * Register parameters of method given
+     *
+     * @param  method the method we are referring to
+     */
+    private void investigateParameters(MethodDeclaration method){
         try {
-            for (Parameter p : m.getParameters()) {
-                try {
-                    registerCoupling(p.getType().resolve().describe());
-                } catch (Exception ignored) {}
-            }
+            method.getParameters().forEach(p -> registerCoupling(p.getType().resolve().describe()));
+        }catch (Exception ignored) {}
+    }
+
+    /**
+     * Register invocation of method given
+     *
+     * @param  method the method we are referring to
+     */
+    private void investigateInvocation(MethodDeclaration method){
+        try {
+            method.findAll(MethodCallExpr.class)
+                    .forEach(methodCall -> registerMethodInvocation(methodCall.resolve().getPackageName()+"."+methodCall.resolve().getClassName(), methodCall.resolve().getQualifiedSignature()));
         }catch (Exception ignored){}
     }
 
-    private void investigateInvocation(MethodDeclaration m){
-        for(MethodCallExpr methodCall : m.findAll(MethodCallExpr.class)) {
-            try {
-                registerMethodInvocation(methodCall.resolve().getPackageName()+"."+methodCall.resolve().getClassName(), methodCall.resolve().getQualifiedSignature());
-            }catch (Exception ignored){}
-        }
-    }
-
+    /**
+     * Register coupling of java class given
+     *
+     * @param  className class name coupled with
+     *                   the class we are referring to
+     */
     private void registerCoupling(String className) {
         if ((withinAnalysisBounds(className)) && (!this.myClassName.equals(className))) {
             this.efferentCoupledClasses.add(className);
@@ -619,25 +632,52 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         }
     }
 
+    /**
+     * Register field access
+     *
+     * @param  fieldName the field we are referring to
+     */
     private void registerFieldAccess(String fieldName) {
         registerCoupling(this.myClassName);
         this.methodIntersection.get(this.methodIntersection.size() - 1).add(fieldName);
     }
 
+    /**
+     * Register method invocation of class given
+     *
+     * @param  className the name of the class we are referring to
+     */
     private void registerMethodInvocation(String className, String signature) {
         registerCoupling(className);
         incRFC(signature);
         incMPC(signature);
     }
 
+    /**
+     * Increase MPC metric value with class signature given
+     *
+     * @param  signature the signature of the method we are referring to
+     */
     private void incMPC(String signature) {
         this.methodsCalled.add(signature);
     }
 
+    /**
+     * Increase RFC metric value with class signature given
+     *
+     * @param  signature the signature of the method we are referring to
+     */
     private void incRFC(String signature) {
         this.responseSet.add(signature);
     }
 
+    /**
+     * Get valid interfaces (ancestors) of class given
+     *
+     * @param  javaClass the class we are referring to
+     *
+     * @return list of valid interfaces
+     */
     private List<ResolvedReferenceType> getValidInterfaces(ResolvedReferenceType javaClass) {
 
         List<ResolvedReferenceType> ancestorsIf;
@@ -646,7 +686,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
             ancestorsIf = javaClass.getAllInterfacesAncestors();
         }catch (UnsolvedSymbolException e){ return new ArrayList<>(); }
 
-        ArrayList<ResolvedReferenceType> validInterfaces = new ArrayList<>();
+        List<ResolvedReferenceType> validInterfaces = new ArrayList<>();
         for (ResolvedReferenceType resolvedReferenceType : ancestorsIf) {
             try {
                 if (withinAnalysisBounds(resolvedReferenceType.getQualifiedName()))
@@ -656,6 +696,13 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return validInterfaces;
     }
 
+    /**
+     * Get valid interfaces (ancestors) of ancestors given
+     *
+     * @param  ancestors list of ancestors
+     *
+     * @return list of valid interfaces
+     */
     private List<ResolvedReferenceType> getValidInterfaces(List<ResolvedReferenceType> ancestors) {
 
         ArrayList<ResolvedReferenceType> validInterfaces = new ArrayList<>();
@@ -672,28 +719,53 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         return validInterfaces;
     }
 
+    /**
+     * Check if the class with the given class name
+     * is within analysis bounds (is user-defined)
+     *
+     * @param  className java class name given
+     *
+     * @return true if class is within analysis bounds,
+     * false otherwise
+     */
     private boolean withinAnalysisBounds(String className) {
         return MetricsCalculator.withinAnalysisBounds(className);
     }
 
+    /**
+     * Check if the superclass of a class with the given class name
+     * is within analysis bounds (is user-defined)
+     *
+     * @param  superClass superclass given
+     *
+     * @return true if class is within analysis bounds,
+     * false otherwise
+     */
     private boolean withinAnalysisBounds(ResolvedReferenceType superClass) {
         if (superClass == null)
             return false;
         return withinAnalysisBounds(superClass.getQualifiedName());
     }
 
+    /**
+     * Calculates all values of metrics the tool supports
+     *
+     * @param  javaClass the class we are referring to
+     */
     public void calculateMetrics(ClassOrInterfaceDeclaration javaClass) {
         String superClassName;
         try {
-            superClassName = javaClass.getExtendedTypes().get(0).resolve().getQualifiedName();
+            superClassName = getSuperClassName(javaClass);
         }catch (Exception e){
-            superClassName = "";
+            superClassName = null;
         }
 
         this.classMetrics.setAna(calculateAna(javaClass));
-        this.classMetrics.setDit(calculateDit(javaClass.resolve().getQualifiedName(), !superClassName.isEmpty()
-                && javaClass.resolve().getAncestors().size() != 0
-                ? javaClass.resolve().getAncestors().get(javaClass.resolve().getAncestors().size() - 1) : null));
+        try {
+            this.classMetrics.setDit(calculateDit(javaClass.resolve().getQualifiedName(), superClassName != null
+                    && javaClass.resolve().getAncestors().size() != 0
+                    ? javaClass.resolve().getAncestors().get(javaClass.resolve().getAncestors().size() - 1) : null));
+        }catch (Exception ignored){}
         this.classMetrics.setMfa(calculateMfa(javaClass));
         this.classMetrics.setDam(calculateDam(javaClass));
         this.classMetrics.setNop(calculateNop(javaClass));
@@ -711,6 +783,11 @@ public class ClassVisitor extends VoidVisitorAdapter<Void> {
         this.classMetrics.setLcom(calculateLCOM());
     }
 
+    /**
+     * Calculates all values of metrics the tool supports
+     *
+     * @param  en  the enumeration we are referring to
+     */
     public void calculateMetrics(EnumDeclaration en){
         this.classMetrics.setAna(0.0f);
         this.classMetrics.setDit(0);

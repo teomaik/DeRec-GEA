@@ -2,7 +2,7 @@ package metrics;
 
 import calculator.MetricsCalculator;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -11,7 +11,7 @@ public class ProjectMetrics extends WideMetrics {
 		if (isCalculated()) {
 			return;
 		}
-		HashMap<String, PackageMetrics> packageMetrics = MetricsCalculator.getProjectMetricsContainer()
+		Map<String, PackageMetrics> packageMetrics = MetricsCalculator.getProjectMetricsContainer()
 				.getPackages(project);
 		Set<Entry<String, PackageMetrics>> rootPackages = packageMetrics.entrySet();
 		Entry<String, PackageMetrics> currentPackage;
@@ -19,42 +19,41 @@ public class ProjectMetrics extends WideMetrics {
 			currentPackage = rootPackage;
 			(currentPackage.getValue())
 					.calculateAllMetrics(currentPackage.getKey());
-			this.classesCount += currentPackage.getValue().classesCount;
+			this.setClassesCount(this.getClassesCount() + currentPackage.getValue().getClassesCount());
 			increaseMetrics(currentPackage.getValue());
 		}
 		finalizeMetrics();
-		this.calculated = true;
+		this.setCalculated(true);
 	}
 
 	private void finalizeMetrics() {
-		this.ana /= this.classesCount;
-		this.cbo /= this.classesCount;
-		this.moa /= this.classesCount;
-		this.nop /= this.classesCount;
-		this.lcom /= this.classesCount;
-		this.npm /= this.classesCount;
-		this.wmc /= this.classesCount;
-		this.mfa /= this.classesCount;
-		this.dam /= this.damValidClassesCount;
+		this.setAna(this.getAna() / this.getClassesCount());
+		this.setCbo(this.getCbo() / this.getClassesCount());
+		this.setMoa(this.getMoa() / this.getClassesCount());
+		this.setNop(this.getNop() / this.getClassesCount());
+		this.setLcom(this.getLcom() / this.getClassesCount());
+		this.setNpm(this.getNpm() / this.getClassesCount());
+		this.setWmc(this.getWmc() / this.getClassesCount());
+		this.setMfa(this.getMfa() / this.getClassesCount());
+		this.setDam(this.getDam() / this.getDamValidClassesCount());
 	}
 
 	private void increaseMetrics(PackageMetrics packageMetrics) {
-		this.ana += packageMetrics.ana * packageMetrics.classesCount;
-		this.cbo += packageMetrics.cbo * packageMetrics.classesCount;
-		this.moa += packageMetrics.moa * packageMetrics.classesCount;
-		this.nop += packageMetrics.nop * packageMetrics.classesCount;
-		this.lcom += packageMetrics.lcom * packageMetrics.classesCount;
-		this.npm += packageMetrics.npm * packageMetrics.classesCount;
-		this.wmc += packageMetrics.wmc * packageMetrics.classesCount;
-		this.mfa += packageMetrics.mfa * packageMetrics.classesCount;
-		if (!Float.isNaN(packageMetrics.dam)) {
-			if (Float.isNaN(this.dam))
-				this.dam = 0.0F;
-			this.dam += packageMetrics.dam
-					* packageMetrics.damValidClassesCount;
-			this.damValidClassesCount += packageMetrics.damValidClassesCount;
+		this.setAna(this.getAna() + packageMetrics.getAna() * packageMetrics.getClassesCount());
+		this.setCbo(this.getCbo() + packageMetrics.getCbo() * packageMetrics.getClassesCount());
+		this.setMoa(this.getMoa() + packageMetrics.getMoa() * packageMetrics.getClassesCount());
+		this.setNop(this.getNop() + packageMetrics.getNop() * packageMetrics.getClassesCount());
+		this.setLcom(this.getLcom() + packageMetrics.getLcom() * packageMetrics.getClassesCount());
+		this.setNpm(this.getNpm() + packageMetrics.getNpm() * packageMetrics.getClassesCount());
+		this.setWmc(this.getWmc() + packageMetrics.getWmc() * packageMetrics.getClassesCount());
+		this.setMfa(this.getMfa() + packageMetrics.getMfa() * packageMetrics.getClassesCount());
+		if (!Float.isNaN(packageMetrics.getDam())) {
+			if (Float.isNaN(this.getDam()))
+				this.setDam(0.0F);
+			this.setDam(this.getDam() + packageMetrics.getDam() * packageMetrics.getDamValidClassesCount());
+			this.setDamValidClassesCount(this.getDamValidClassesCount() + packageMetrics.getDamValidClassesCount());
 		}
-		this.noh += packageMetrics.noh;
-		this.dsc += packageMetrics.dsc;
+		this.setNoh(this.getNoh() + packageMetrics.getNoh());
+		this.setDsc(this.getDsc() + packageMetrics.getDsc());
 	}
 }

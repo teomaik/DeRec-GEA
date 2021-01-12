@@ -5,11 +5,12 @@ import metrics.ClassMetrics;
 import metrics.PackageMetrics;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class PackageMetricsContainer {
-	private final HashMap<String, PackageMetrics> packageToMetric;
-	private final HashMap<String, HashMap<String, ClassMetrics>> packageClasses;
-	private final HashMap<String, HashMap<String, PackageMetrics>> packageSubpackages;
+	private final Map<String, PackageMetrics> packageToMetric;
+	private final Map<String, Map<String, ClassMetrics>> packageClasses;
+	private final Map<String, Map<String, PackageMetrics>> packageSubpackages;
 
 	public PackageMetricsContainer() {
 		this.packageToMetric = new HashMap<>();
@@ -32,11 +33,11 @@ public class PackageMetricsContainer {
 				|| (this.packageToMetric.containsKey(packageName));
 	}
 
-	public HashMap<String, ClassMetrics> getPackageClasses(String packageName) {
+	public Map<String, ClassMetrics> getPackageClasses(String packageName) {
 		return this.packageClasses.computeIfAbsent(packageName, k -> new HashMap<>());
 	}
 
-	public HashMap<String, PackageMetrics> getPackageSubpackages(
+	public Map<String, PackageMetrics> getPackageSubpackages(
 			String packageName) {
 		return this.packageSubpackages
 				.computeIfAbsent(packageName, k -> new HashMap<>());
@@ -44,7 +45,7 @@ public class PackageMetricsContainer {
 
 	public void addClassToPackage(String packageName, String javaClass,
 			ClassMetrics javaMetrics) {
-		HashMap<String, ClassMetrics> packageClasses = getPackageClasses(packageName);
+		Map<String, ClassMetrics> packageClasses = getPackageClasses(packageName);
 		packageClasses.put(javaClass, javaMetrics);
 	}
 
@@ -93,9 +94,9 @@ public class PackageMetricsContainer {
 	}
 
 	private String getParentPackage(String packageName) {
-		int packageSepetatorIndex = packageName.lastIndexOf('.');
-		if (packageSepetatorIndex == -1)
+		int packageSeparatorIndex = packageName.lastIndexOf('.');
+		if (packageSeparatorIndex == -1)
 			return "";
-		return packageName.substring(0, packageSepetatorIndex);
+		return packageName.substring(0, packageSeparatorIndex);
 	}
 }

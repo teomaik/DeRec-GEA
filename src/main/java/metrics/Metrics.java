@@ -68,13 +68,13 @@ public class Metrics {
 	public void setSize2(int size2){
 		this.size2 = size2;
 	}
-	
-	public void setMaintainability(){
-		this.nom = this.wmc;
-	}
 
 	public int getDcc() {
 		return this.dcc;
+	}
+
+	public int getSize1() {
+		return this.size1;
 	}
 	
 	public int getNoh(){
@@ -168,4 +168,44 @@ public class Metrics {
 	public void setDam(float dam) {
 		this.dam = dam;
 	}
+
+	public double getWmcCC() { return this.wmc_cc; }
+
+	public double getCamc() { return this.camc; }
+
+	public double getNom() { return this.nom; }
+
+	public void incWmc() { this.wmc += 1.0F; }
+
+	public int getMpc() { return this.mpc; }
+
+	public double getReusability() { return this.reusability; }
+
+	public double getFlexibility() { return this.flexibility; }
+
+	public double getUnderstandability() { return this.understandability; }
+
+	public double getExtendibility() { return this.extendibility; }
+
+	public double getEffectiveness() { return this.effectiveness; }
+
+	public double getFunctionality() { return this.functionality; }
+
+	public void setReusability(double reusability){ this.reusability = reusability; }
+
+	public void setFlexibility (double flexibility){ this.flexibility = flexibility; }
+
+	public void setUnderstandability (double understandability){ this.understandability = understandability; }
+
+	public void setFunctionality (double functionality){ this.functionality = functionality; }
+
+	public void setExtendibility (double extendibility){ this.extendibility = extendibility; }
+
+	public void setEffectiveness (double effectiveness){ this.effectiveness = effectiveness; }
+
+	public void setDsc (int dsc){ this.dsc = dsc; }
+
+	public void setNom (float nom){ this.nom = nom; }
+
+	public void setNoh (int noh){ this.noh = noh; }
 }

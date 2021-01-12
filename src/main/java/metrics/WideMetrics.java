@@ -1,7 +1,5 @@
 package metrics;
 
-import metrics.Metrics;
-
 public class WideMetrics extends Metrics {
 	protected int classesCount;
 	protected int damValidClassesCount;
@@ -25,10 +23,6 @@ public class WideMetrics extends Metrics {
 		this.classesCount = classesCount;
 	}
 
-	public float getDsc() {
-		return this.dsc;
-	}
-
 	public void setDsc(float dsc) {
 		this.dsc = dsc;
 	}
@@ -44,4 +38,12 @@ public class WideMetrics extends Metrics {
 	public boolean isCalculated() {
 		return this.calculated;
 	}
+
+	public void setCalculated(boolean calculated) { this.calculated = calculated; }
+
+	public int getDamValidClassesCount() { return damValidClassesCount; }
+
+	public float getDsc() { return dsc; }
+
+	public void setDamValidClassesCount(int damValidClassesCount) { this.damValidClassesCount = damValidClassesCount; }
 }

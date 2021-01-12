@@ -4,17 +4,18 @@ import metrics.PackageMetrics;
 import metrics.ProjectMetrics;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ProjectMetricsContainer {
-	private final HashMap<String, ProjectMetrics> projectToMetric;
-	private final HashMap<String, HashMap<String, PackageMetrics>> projectPackages;
+	private final Map<String, ProjectMetrics> projectToMetric;
+	private final Map<String, Map<String, PackageMetrics>> projectPackages;
 
 	public ProjectMetricsContainer() {
 		this.projectToMetric = new HashMap<>();
 		this.projectPackages = new HashMap<>();
 	}
 
-	public HashMap<String, ProjectMetrics> getProjects() {
+	public Map<String, ProjectMetrics> getProjects() {
 		return this.projectToMetric;
 	}
 
@@ -27,7 +28,7 @@ public class ProjectMetricsContainer {
 		return pm;
 	}
 
-	public HashMap<String, PackageMetrics> getPackages(String name) {
+	public Map<String, PackageMetrics> getPackages(String name) {
 		return this.projectPackages.computeIfAbsent(name, k -> new HashMap<>());
 	}
 }

@@ -5,20 +5,27 @@ import metrics.ClassMetrics;
 import metrics.PackageMetrics;
 import metrics.ProjectMetrics;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
+import java.io.*;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static java.lang.System.exit;
+
 public class PrintResults implements CkjmOutputHandler {
+
 	private PrintStream p;
 	private ByteArrayOutputStream os;
 
 	public PrintResults() {
-		this.os = new ByteArrayOutputStream();
-		this.p = new PrintStream(this.os);
-		printHeader();
+		try {
+			os  = new ByteArrayOutputStream();
+			this.p = new PrintStream(os);
+			printHeader();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Exiting...");
+			exit(-1);
+		}
 	}
 
 	public void printHeader() {
@@ -33,7 +40,7 @@ public class PrintResults implements CkjmOutputHandler {
    public void handleClass(String name, ClassMetrics c) {
 		c.setGMOODLowLevel();
 	 	c.setQMOODHighLevel();
-     	this.p.println(name + ";" + c.getOutput());
+     	this.p.println(name + ";" + c.getCsvOutput());
    }
 
 	@Override
@@ -45,33 +52,32 @@ public class PrintResults implements CkjmOutputHandler {
 			currentPackage = rootPackage;
 			handlePackage(currentPackage.getKey());
 		}
+		this.p.close();
 	}
 	 
-  	private void handlePackage(String packageName) {
-	  	Set<Entry<String, PackageMetrics>> subPackages = MetricsCalculator.getPackageMetricsContainer()
-			  	.getPackageSubpackages(packageName).entrySet();
-	  	Entry<String, PackageMetrics> currentPackage;
-	  	for (Entry<String, PackageMetrics> subPackage : subPackages) {
-		  	currentPackage = subPackage;
-		  	handlePackage(currentPackage.getKey());
-	  	}
+  private void handlePackage(String packageName) {
+		Set<Entry<String, PackageMetrics>> subPackages = MetricsCalculator.getPackageMetricsContainer()
+				.getPackageSubpackages(packageName).entrySet();
+		Entry<String, PackageMetrics> currentPackage;
+	  for (Entry<String, PackageMetrics> subPackage : subPackages) {
+		  currentPackage = subPackage;
+		  handlePackage(currentPackage.getKey());
+	  }
 
-	  	Set<Entry<String, ClassMetrics>> classes = MetricsCalculator.getPackageMetricsContainer()
-			  	.getPackageClasses(packageName).entrySet();
-	  	Entry<String, ClassMetrics> currentClass;
-	  	for (Entry<String, ClassMetrics> aClass : classes) {
-		  	currentClass = aClass;
-		  	handleClass(currentClass.getKey(),
-				  	currentClass.getValue());
-	  	}
-  	}
+		Set<Entry<String, ClassMetrics>> classes = MetricsCalculator.getPackageMetricsContainer()
+				.getPackageClasses(packageName).entrySet();
+		Entry<String, ClassMetrics> currentClass;
+	  for (Entry<String, ClassMetrics> aClass : classes) {
+		  currentClass = aClass;
+		  handleClass(currentClass.getKey(),
+				  currentClass.getValue());
+	  }
+	}
 
 	public StringReader getOutput(){
 		try {
-			return new StringReader(this.os.toString("UTF-8"));
-		} catch (Exception e) {
-			return null;
-		}
+			return new StringReader(os.toString("UTF8"));
+		} catch (UnsupportedEncodingException ignored) {}
+		return null;
 	}
-
 }

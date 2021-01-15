@@ -84,7 +84,7 @@ public class GEA_Task implements Callable<Boolean>{
 		
 		ArrayList<GEA_Task> tasks = new ArrayList<GEA_Task>();
 		for(Component comp : newComps) {
-			System.out.println("Component: "+comp.getName()+", #classes: "+comp.getNumberOfClasses()+", needsSplit: "+comp.needsMoreSpliting(this.maxNumberOfArtPerComp));
+			System.out.println("Component: "+comp.getName()+", #classes: "+comp.getNumberOfClasses()+", is_Done: "+!comp.needsMoreSpliting(this.maxNumberOfArtPerComp));
 			if(!comp.needsMoreSpliting(this.maxNumberOfArtPerComp)) {
 				continue;
 			}

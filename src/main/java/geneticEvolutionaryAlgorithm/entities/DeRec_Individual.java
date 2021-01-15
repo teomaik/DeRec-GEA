@@ -71,7 +71,7 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 	
 	public DeRec_Individual(Component component, Hashtable<String, ArrayList<String>> classesAndDeps, Boolean placeholder) { // ***TODO DEBUG
 		super();
-		this.components = new ArrayList<Component>();
+		this.components = component.getMyComponents();
 		this.artifacts = component.getMyClasses();
 		
 		this.baseClasses = classesAndDeps;
@@ -87,9 +87,9 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 	}
 	
 	public String toString() {
-		String ret = "Fitness: "+this.getFinalFitness()+", Coupling: "+this.getCoupling()+", Cohesion: "+this.getCohesion();
+		String ret = "Fitness: "+this.getFinalFitness()+", Coupling: "+this.getCoupling()+", Cohesion: "+this.getCohesion()+"\nComponents: "+this.components.size();
 		for(Component comp : components) {
-			ret+=comp.toString();
+			ret+=comp.toString(0, "");
 		}
 		return ret;
 	}

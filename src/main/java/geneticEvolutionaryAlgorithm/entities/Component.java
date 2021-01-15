@@ -183,4 +183,33 @@ public class Component extends Metricable implements Comparable<Component> {
 		}
 		return 1;
 	}
+	
+	public void findClassDependencies(Hashtable<String, ArrayList<String>> classesAndDeps) {
+
+		Iterator<Entry<String, Artifact>> it = this.myClasses.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
+
+			Artifact artifact = pair.getValue();
+
+			ArrayList<String> deps = classesAndDeps.get(artifact.getName());
+
+			Iterator<String> it2 = deps.iterator();
+			// clses
+			while (it2.hasNext()) {
+				String dep = it2.next();
+				if (!this.myClasses.containsKey(dep)) {
+					// it2.remove(); // avoids a ConcurrentModificationException
+					continue;
+				}
+
+				// adds an Artifact as a dependency to a class
+				this.myClasses.get(artifact.getName()).addDependency(this.myClasses.get(dep));
+
+				// it2.remove(); // avoids a ConcurrentModificationException
+			}
+
+			// it.remove(); // avoids a ConcurrentModificationException
+		}
+	}
 }

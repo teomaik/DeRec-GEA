@@ -16,6 +16,8 @@ import java.util.stream.IntStream;
 import geneticEvolutionaryAlgorithm.entities.Artifact;
 import geneticEvolutionaryAlgorithm.entities.Component;
 import geneticEvolutionaryAlgorithm.entities.DeRec_Individual;
+import geneticEvolutionaryAlgorithm.utils.GEA_Result;
+import geneticEvolutionaryAlgorithm.utils.Util_GEA;
 
 public class GEA {
 
@@ -81,9 +83,20 @@ public class GEA {
 		System.out.println("\n\nFinal fitness: "+root.getFinalFitness());
 //		System.out.println(root.toString(0, ""));
 		
-		DeRec_Individual newIndv = Util_GEA.getComponentFromStructureGEA("", root.getComponentStructure(""), classesWithDeps);
-		//DeRec_Individual //TODO
-		//Create 2 indvs (from the GEA_Utils class), one old one, and one new one. The syso their fitnesses, and then insert them both in the database
+		Component oldIndv = Util_GEA.getComponentFromStructureOld("", classesWithDeps);
+		Component newIndv = Util_GEA.getComponentFromStructureGEA("", root.getComponentStructure(""), classesWithDeps);
+//		System.out.println("\n\n+++New Indv Fitness: "+newIndv.getFinalFitness()+", Coupling:"+newIndv.getCoupling()+", Cohesion: "+newIndv.getCohesion());
+//		System.out.println("#Components"+newIndv.getMyComponents().size());
+//		System.out.print(newIndv.toString(0, ""));
+//		System.out.println("\n\n---Old Indv Fitness: "+oldIndv.getFinalFitness()+", Coupling:"+oldIndv.getCoupling()+", Cohesion: "+oldIndv.getCohesion());
+//		System.out.println("#Components"+oldIndv.getMyComponents().size());
+//		System.out.print(oldIndv.toString(0, ""));
+
+		GEA_Result oldResult = new GEA_Result("Old", oldIndv, classesWithDeps);
+		GEA_Result newResult = new GEA_Result("New", newIndv, classesWithDeps);
+		System.out.println("\n\n"+oldResult.toString());
+		System.out.println("\n\n"+newResult.toString());
+		
 		return true;
 	}
 

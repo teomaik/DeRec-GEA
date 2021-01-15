@@ -12,7 +12,7 @@ import calculator.MetricsCalculator;
 import cppDepFinder.TestDep;
 import metrics.ClassMetrics;
 
-public class DeRecGEA {
+public class DeRec {
 	
 	private static Hashtable<String, ArrayList<String>> artifactsWithDependencies;
 	

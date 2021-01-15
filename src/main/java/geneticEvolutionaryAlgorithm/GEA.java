@@ -56,17 +56,17 @@ public class GEA {
 			futures.add(executor.submit(task));
 		}
 		
-//		// A) Await all runnables to be done (blocking)
+//		//Await all runnables to be done (blocking)
 //		for(Future<?> future : futures)
 //		    future.get(); // get will block until the future is done
 //
-//		// B) Check if all runnables are done (non-blocking)
+//		//Check if all runnables are done (non-blocking)
 //		boolean allDone = true;
 //		for(Future<?> future : futures){
 //		    allDone &= future.isDone(); // check if future is done
 //		}
 		
-		// A) Await all runnables to be done (blocking)
+		//Await all runnables to be done (blocking)
 		int current=0;
 		int size = futures.size();
 		while(current<size) {
@@ -80,8 +80,7 @@ public class GEA {
 		System.out.println("Executor is shutting down");
 
 		root.calculate_Metrics();
-		System.out.println("\n\nFinal fitness: "+root.getFinalFitness());
-//		System.out.println(root.toString(0, ""));
+//		System.out.println("\n\nFinal fitness: "+root.getFinalFitness());
 		
 		Component oldIndv = Util_GEA.getComponentFromStructureOld("", classesWithDeps);
 		Component newIndv = Util_GEA.getComponentFromStructureGEA("", root.getComponentStructure(""), classesWithDeps);
@@ -94,8 +93,11 @@ public class GEA {
 
 		GEA_Result oldResult = new GEA_Result("Old", oldIndv, classesWithDeps);
 		GEA_Result newResult = new GEA_Result("New", newIndv, classesWithDeps);
-		System.out.println("\n\n"+oldResult.toString());
-		System.out.println("\n\n"+newResult.toString());
+		System.out.println("------------------------------------------------------");
+		System.out.println("\n"+oldResult.toStringMetrics());
+		System.out.println("\n"+newResult.toStringMetrics());
+//		System.out.println("\n\n"+oldResult.toString());
+//		System.out.println("\n\n"+newResult.toString());
 		
 		return true;
 	}

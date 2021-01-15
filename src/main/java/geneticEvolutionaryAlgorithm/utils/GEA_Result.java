@@ -36,6 +36,10 @@ public class GEA_Result extends Metricable {
 		}
 	}
 	
+	public String toStringMetrics() {
+		return (this.name+"Fitness: "+this.getFinalFitness()+", Coupling: "+this.getCoupling()+", Cohesion: "+this.getCohesion()+"\nComponents: "+this.components.size());
+	}
+	
 	public String toString() {
 		String ret = this.name+"Fitness: "+this.getFinalFitness()+", Coupling: "+this.getCoupling()+", Cohesion: "+this.getCohesion()+"\nComponents: "+this.components.size();
 		for(Component comp : components) {
@@ -57,8 +61,6 @@ public class GEA_Result extends Metricable {
 		for (int i = 0; i < components.size(); i++) {
 			tempCohesion += components.get(i).getCohesion();
 			tempCoupling += components.get(i).getCoupling();
-//			System.out.println("Calcing comp: "+i);
-//			System.out.println(tempCohesion+"  -  "+tempCoupling);
 		}
 
 		this.setCohesion(tempCohesion / this.components.size());
@@ -70,27 +72,21 @@ public class GEA_Result extends Metricable {
 		Iterator<Entry<String, Artifact>> it = this.artifacts.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, Artifact> pair = (Map.Entry<String, Artifact>) it.next();
-
 			Artifact artifact = pair.getValue();
-
 			ArrayList<String> deps = classesAndDeps.get(artifact.getName());
 
+			//artifacts dependencies
 			Iterator<String> it2 = deps.iterator();
 			// clses
 			while (it2.hasNext()) {
 				String dep = it2.next();
 				if (!this.artifacts.containsKey(dep)) {
-					// it2.remove(); // avoids a ConcurrentModificationException
 					continue;
 				}
-
 				// adds an Artifact as a dependency to a class
-				this.artifacts.get(artifact.getName()).addDependency(this.artifacts.get(dep));
-
-				// it2.remove(); // avoids a ConcurrentModificationException
+				artifact.addDependency(this.artifacts.get(dep));
 			}
-
-			// it.remove(); // avoids a ConcurrentModificationException
+			artifact.calculate_Metrics();
 		}
 	}
 }

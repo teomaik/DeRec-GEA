@@ -19,14 +19,14 @@ public class Util_GEA {
 			Entry<String, ArrayList<String>> e = it.next();
 			Component component = new Component(e.getKey());
 			for(String s: e.getValue()) {
-				ret.addArtifact(new Artifact(s));
-				component.addArtifact(new Artifact(s));
+				Artifact art = new Artifact(s);
+				ret.addArtifact(art);
+				component.addArtifact(art);
 			}
 			ret.addComponent(component);
 		}
 //		ret.findClassDependencies(classesWithDeps);
 //		ret.calculate_Metrics();
-		System.out.println("FITNESS: "+ret.getFinalFitness());
 		return ret;
 	}
 	

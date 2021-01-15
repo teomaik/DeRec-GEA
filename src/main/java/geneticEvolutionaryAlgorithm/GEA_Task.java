@@ -21,7 +21,7 @@ public class GEA_Task implements Callable<Boolean>{
 
 	final int terminationCriteria = 300;
 	final int populationSize = 100;	
-	final int maxNumberOfArtPerComp = 20;
+	final int maxNumberOfArtPerComp = 15;
 	
 	
 	private ArrayList<DeRec_Individual> population;
@@ -38,12 +38,56 @@ public class GEA_Task implements Callable<Boolean>{
 
 	@Override
 	public Boolean call() throws Exception {
+		
+		DeRec_Individual fittestIndv;
+		int tries = 0;
+		boolean didSplit = false;
+		do {
+			fittestIndv = runGEA();
+			
+			if(fittestIndv.getComponents().size()>1) {
+				didSplit = true;
+			}
+			tries++;
+		}while(tries<5 && !didSplit);
+		
+		if(!didSplit) {
+			return false;
+		}
+		
+		ArrayList<Component> newComps = fittestIndv.getComponents();
+		for(Component comp : newComps) {
+			this.componentToSplit.addComponent(comp);
+		}
+		
+		ArrayList<GEA_Task> tasks = new ArrayList<GEA_Task>();
+		for(Component comp : newComps) {
+			System.out.println("Component: "+comp.getName()+", #classes: "+comp.getNumberOfClasses()+", is_Done: "+!comp.needsMoreSpliting(this.maxNumberOfArtPerComp));
+			if(!comp.needsMoreSpliting(this.maxNumberOfArtPerComp)) {
+				continue;
+			}
+			tasks.add(new GEA_Task(this.executor, this.futures, this.classesWithDeps, comp));
+		}
+		
+		 synchronized(this.futures) {
+		      for(GEA_Task task : tasks) {
+		    	  this.futures.add(executor.submit(task));
+		      }
+		  }
+		
+
+			System.out.println("Split "+this.componentToSplit.getNumberOfClasses()+" Artifacts into "+fittestIndv.getComponents().size()+" new Components");
+		// TODO
+		return true;
+	}
+	
+	private DeRec_Individual runGEA() {
 		System.out.println("Spliting a component with "+this.componentToSplit.getNumberOfClasses()+" Artifacts");
 		try {
 			population_Initialization(componentToSplit);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 		DeRec_Individual fittestIndv = population.get(0);
 
@@ -72,35 +116,8 @@ public class GEA_Task implements Callable<Boolean>{
 			
 			genCounter++;
 		}
-
-		if(fittestIndv.getComponents().size()==1) {
-			return true;
-		}
 		
-		ArrayList<Component> newComps = fittestIndv.getComponents();
-		for(Component comp : newComps) {
-			this.componentToSplit.addComponent(comp);
-		}
-		
-		ArrayList<GEA_Task> tasks = new ArrayList<GEA_Task>();
-		for(Component comp : newComps) {
-			System.out.println("Component: "+comp.getName()+", #classes: "+comp.getNumberOfClasses()+", is_Done: "+!comp.needsMoreSpliting(this.maxNumberOfArtPerComp));
-			if(!comp.needsMoreSpliting(this.maxNumberOfArtPerComp)) {
-				continue;
-			}
-			tasks.add(new GEA_Task(this.executor, this.futures, this.classesWithDeps, comp));
-		}
-		
-		 synchronized(this.futures) {
-		      for(GEA_Task task : tasks) {
-		    	  this.futures.add(executor.submit(task));
-		      }
-		  }
-		
-
-			System.out.println("Split "+this.componentToSplit.getNumberOfClasses()+" Artifacts into "+fittestIndv.getComponents().size()+" new Components");
-		// TODO
-		return true;
+		return fittestIndv;
 	}
 
 	private void mutatePopulation() {

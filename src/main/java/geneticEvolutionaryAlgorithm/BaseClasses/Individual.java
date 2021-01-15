@@ -1,4 +1,4 @@
-package geneticEvolutionaryAlgorithm.entities;
+package geneticEvolutionaryAlgorithm.BaseClasses;
 
 public interface Individual {
 	

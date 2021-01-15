@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Component extends Metricable implements Comparable<Component>{
+import geneticEvolutionaryAlgorithm.BaseClasses.Metricable;
+
+public class Component extends Metricable implements Comparable<Component> {
 
 	private String name;
 
@@ -30,32 +32,42 @@ public class Component extends Metricable implements Comparable<Component>{
 		double tempCohesion = 0;
 		double tempCoupling = 0;
 
-		Iterator it = myClasses.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry pair = (Map.Entry) it.next();
-			Artifact art = (Artifact) pair.getValue(); // ***DEBUG ***TODO ***TEST an leitourgei
-			art.calculate_Metrics();
-			tempCohesion += myClasses.get(pair.getKey()).getCohesion(); // ***DEBUG ***TODO ***TEST an leitourgei
-			tempCoupling += myClasses.get(pair.getKey()).getCoupling(); // ***DEBUG ***TODO ***TEST an leitourgei
+		if (this.myComponents.size() != 0) {
+			for (Component comp : this.myComponents) {
+				comp.calculate_Metrics();
+				tempCohesion += comp.getCohesion();
+				tempCoupling += comp.getCoupling();
+			}
+			this.setCohesion(tempCohesion / this.myComponents.size());
+			this.setCoupling(tempCoupling / this.myComponents.size());
+		} else {
+			Iterator it = myClasses.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+				Artifact art = (Artifact) pair.getValue(); // ***DEBUG ***TODO ***TEST an leitourgei
+				art.calculate_Metrics();
+				tempCohesion += myClasses.get(pair.getKey()).getCohesion(); // ***DEBUG ***TODO ***TEST an leitourgei
+				tempCoupling += myClasses.get(pair.getKey()).getCoupling(); // ***DEBUG ***TODO ***TEST an leitourgei
 
-			//it.remove(); // avoids a ConcurrentModificationException
+				// it.remove(); // avoids a ConcurrentModificationException
+			}
+			this.setCohesion(tempCohesion / myClasses.size());
+			this.setCoupling(tempCoupling / myClasses.size());
 		}
 
-		this.setCohesion(tempCohesion / myClasses.size());
-		this.setCoupling(tempCoupling / myClasses.size());
 	}
 
 	public boolean needsMoreSpliting(int maxArtifactsPerComponent) {
-		if(this.myComponents.size()==0) {
-			return this.myClasses.size() <= maxArtifactsPerComponent;
+		if (this.myComponents.size() == 0) {
+			return this.myClasses.size() > maxArtifactsPerComponent;
 		}
 		boolean ret = true;
-		for(Component comp : this.myComponents) {
+		for (Component comp : this.myComponents) {
 			ret = ret && comp.needsMoreSpliting(maxArtifactsPerComponent);
 		}
 		return ret;
 	}
-	
+
 	// find if the component contains a specific class
 	public boolean containsArtifact(Artifact cls) {
 		return this.myClasses.containsKey(cls.getName());
@@ -72,6 +84,10 @@ public class Component extends Metricable implements Comparable<Component>{
 		}
 	}
 
+	public void addComponent(Component component) {
+		this.myComponents.add(component);
+	}
+
 	public int size() {
 		return this.myClasses.size();
 	}
@@ -84,21 +100,63 @@ public class Component extends Metricable implements Comparable<Component>{
 		this.name = name;
 	}
 
-//	public String toString() {
-//		String ret=this.name+"\n";
-//		int i=0;
-//		for(Artifact art : myClasses) {
-//			ret+="\n\t"+i+": "+art.getName();
-//			i++;
-//		}
-//		
-//		return ret;
-//	}
+	public Hashtable<String, ArrayList<String>> getComponentStructure(String path) {
+		Hashtable<String, ArrayList<String>> ret = new Hashtable<String, ArrayList<String>>();
+		
+		path = path+this.name;
+		if (this.myComponents.size() != 0) {
+			for (Component comp : this.myComponents) {
+				Hashtable<String, ArrayList<String>> temp = comp.getComponentStructure(path+".");
+				Iterator<Entry<String, ArrayList<String>>> it = temp.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, ArrayList<String>> e = it.next();
+					ret.put(e.getKey(), e.getValue());
+				}
+			}
+			return ret;
+		}else {
+			ArrayList<String> cls = new ArrayList<String>();
+			Iterator<Entry<String, Artifact>> it = this.myClasses.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, Artifact> e = it.next();
+				cls.add(e.getKey());
+			}
+			ret.put(path, cls);
+		}
+
+		return ret;
+	}
+	
+	public String toString(int level, String path) {
+		String pronoun = "";
+		for (int i = 0; i < level; i++) {
+			pronoun += "\s";
+		}
+		String ret = "";
+		ret += "\n" + pronoun + "+" + path + this.name;
+
+		if (this.myComponents.size() != 0) {
+			for (Component comp : this.myComponents) {
+				ret += comp.toString(level + 1, path + this.name + ".");
+			}
+			return ret;
+		}
+
+		Iterator<Entry<String, Artifact>> it = this.myClasses.entrySet().iterator();
+		int i = 0;
+		while (it.hasNext()) {
+			i++;
+			Entry<String, Artifact> e = it.next();
+			ret += "\n" + pronoun + "\s" + i + ": " + e.getKey();
+		}
+
+		return ret;
+	}
 
 	public int getNumberOfClasses() {
 		return this.myClasses.size();
 	}
-	
+
 	public Iterator<Entry<String, Artifact>> getMyClassesIterator() {
 		return myClasses.entrySet().iterator();
 	}

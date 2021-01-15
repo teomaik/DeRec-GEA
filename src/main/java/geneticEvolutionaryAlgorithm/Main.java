@@ -20,12 +20,12 @@ public class Main {
 //	String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
 ////	// >test end
 		
-				// <test Cpp
-		String progrLang = "c";
-		String prjName = "test";
-		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\rodinia-master";
-		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-		// >test end
+//				// <test Cpp
+//		String progrLang = "c";
+//		String prjName = "test";
+//		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\rodinia-master";
+//		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
+//		// >test end
 		
 		
 ////		// <test java
@@ -35,12 +35,12 @@ public class Main {
 //		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
 ////		// >test end
 
-//		// <test Cpp
-//		String progrLang = "c";
-//		String prjName = "test";
-//		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\kameleon2";
-//		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-//		// >test end
+		// <test Cpp
+		String progrLang = "c";
+		String prjName = "test";
+		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\kameleon2";
+		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
+		// >test end
 
 		try {
 			DeRecGEA.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);

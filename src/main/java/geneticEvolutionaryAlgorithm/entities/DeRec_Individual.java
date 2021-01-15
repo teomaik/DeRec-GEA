@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
+import geneticEvolutionaryAlgorithm.BaseClasses.Individual;
+import geneticEvolutionaryAlgorithm.BaseClasses.Metricable;
+
 public class DeRec_Individual extends Metricable implements Individual, Comparable<DeRec_Individual> {
 	// final static HashMap<String, ClassMetrics> classesAndDeps;
 
@@ -39,8 +42,6 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 			this.calculate_Metrics();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-			int i = 0;
-			i = 3 / i;
 		}
 	}
 
@@ -59,29 +60,38 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 			this.createGivenStructure(comps);
 		} catch (Exception e1) {
 			System.out.println(e1.getMessage());
-			int i = 0;
-			i = 3 / i;
 		}
-		
-//		Iterator<Entry<String, ArrayList<String>>> it = comps.entrySet().iterator();
-//		while (it.hasNext()) {
-//			Map.Entry<String, ArrayList<String>> e = (Map.Entry<String, ArrayList<String>>) it.next();
-//			System.out.println("comp: " + e.getKey());
-//			for (String dep : e.getValue()) {
-//				System.out.println("\tdep: " + dep);
-//			}
-//		}
-//
-//		int y = 0;
-//		y = 3 / y;
-		
+
 		try {
 			this.calculate_Metrics();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-			int i = 0;
-			i = 3 / i;
 		}
+	}
+	
+	public DeRec_Individual(Component component, Hashtable<String, ArrayList<String>> classesAndDeps, Boolean placeholder) { // ***TODO DEBUG
+		super();
+		this.components = new ArrayList<Component>();
+		this.artifacts = component.getMyClasses();
+		
+		this.baseClasses = classesAndDeps;
+
+		this.findClassDependencies(classesAndDeps);
+		parentCompName = component.getName();
+
+		try {
+			this.calculate_Metrics();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public String toString() {
+		String ret = "Fitness: "+this.getFinalFitness()+", Coupling: "+this.getCoupling()+", Cohesion: "+this.getCohesion();
+		for(Component comp : components) {
+			ret+=comp.toString();
+		}
+		return ret;
 	}
 
 	private void createGivenStructure(HashMap<String, ArrayList<String>> comps) throws Exception {
@@ -217,8 +227,8 @@ public class DeRec_Individual extends Metricable implements Individual, Comparab
 
 	// return a HashTable with this Individuals Component Strucure. It contains the
 	// Component's name as a key, and a List with it's classes as a Value
-	public HashMap<String, ArrayList<String>> exportComponentStructure() {
-		HashMap<String, ArrayList<String>> ret = new HashMap<String, ArrayList<String>>();
+	public Hashtable<String, ArrayList<String>> exportComponentStructure() {
+		Hashtable<String, ArrayList<String>> ret = new Hashtable<String, ArrayList<String>>();
 
 		for (Component c : this.components) {
 			ArrayList<String> cls = new ArrayList<String>();

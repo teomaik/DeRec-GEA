@@ -24,24 +24,15 @@ public class GEA {
 	private Hashtable<String, ArrayList<String>> classesWithDeps;
 
 	private Component root;
-
+	GEA_Result oldResult = null;
+	GEA_Result newResult = null;
+	
 	public GEA(Hashtable<String, ArrayList<String>> cls) {
 		this.classesWithDeps = cls;
 	}
 
 	public boolean startGEA() throws Exception {
 		System.out.println("GEA.classesWithDeps size: " + classesWithDeps.size());
-
-//		Iterator<Entry<String, ArrayList<String>>> it = classesWithDeps.entrySet().iterator();
-//		while (it.hasNext()) {
-//			Map.Entry<String, ArrayList<String>> e = (Map.Entry<String, ArrayList<String>>) it.next();
-//			System.out.println("Class: " + e.getKey());
-//			for (String s : e.getValue()) {
-//				System.out.println("\tDep to: " + s);
-//			}
-//
-//			it.remove();
-//		}
 
 		this.root = createComponent("root", classesWithDeps);
 		
@@ -80,24 +71,16 @@ public class GEA {
 		System.out.println("Executor is shutting down");
 
 		root.calculate_Metrics();
-//		System.out.println("\n\nFinal fitness: "+root.getFinalFitness());
-		
+
 		Component oldIndv = Util_GEA.getComponentFromStructureOld("", classesWithDeps);
 		Component newIndv = Util_GEA.getComponentFromStructureGEA("", root.getComponentStructure(""), classesWithDeps);
-//		System.out.println("\n\n+++New Indv Fitness: "+newIndv.getFinalFitness()+", Coupling:"+newIndv.getCoupling()+", Cohesion: "+newIndv.getCohesion());
-//		System.out.println("#Components"+newIndv.getMyComponents().size());
-//		System.out.print(newIndv.toString(0, ""));
-//		System.out.println("\n\n---Old Indv Fitness: "+oldIndv.getFinalFitness()+", Coupling:"+oldIndv.getCoupling()+", Cohesion: "+oldIndv.getCohesion());
-//		System.out.println("#Components"+oldIndv.getMyComponents().size());
-//		System.out.print(oldIndv.toString(0, ""));
 
-		GEA_Result oldResult = new GEA_Result("Old", oldIndv, classesWithDeps);
-		GEA_Result newResult = new GEA_Result("New", newIndv, classesWithDeps);
-		System.out.println("------------------------------------------------------");
-		System.out.println("\n"+oldResult.toStringMetrics());
-		System.out.println("\n"+newResult.toStringMetrics());
-//		System.out.println("\n\n"+oldResult.toString());
-//		System.out.println("\n\n"+newResult.toString());
+
+		this.oldResult = new GEA_Result("Old", oldIndv, classesWithDeps);
+		this.newResult = new GEA_Result("New", newIndv, classesWithDeps);
+//		System.out.println("------------------------------------------------------");
+//		System.out.println("\n"+oldResult.toStringMetrics());
+//		System.out.println("\n"+newResult.toStringMetrics());
 		
 		return true;
 	}
@@ -116,5 +99,13 @@ public class GEA {
 		}
 		System.out.println("Root number of artifacts: " + ret.getNumberOfClasses());
 		return ret;
+	}
+
+	public GEA_Result getNewResult() {
+		return newResult;
+	}
+
+	public GEA_Result getOldResult() {
+		return oldResult;
 	}
 }

@@ -15,9 +15,6 @@ public class GEA_Result extends Metricable {
 	private Hashtable<String, Artifact> artifacts;
 	private ArrayList<Component> components;
 	private String name;
-	private double fitness = 0;
-
-	private Hashtable<String, ArrayList<String>> baseClasses;
 
 	public GEA_Result(String name, Component component, Hashtable<String, ArrayList<String>> classesAndDeps) { // ***TODO
 																												// DEBUG
@@ -25,7 +22,6 @@ public class GEA_Result extends Metricable {
 		this.components = component.getMyComponents();
 		this.artifacts = component.getMyClasses();
 
-		this.baseClasses = classesAndDeps;
 		this.name = name;
 		this.findClassDependencies(classesAndDeps);
 
@@ -88,5 +84,13 @@ public class GEA_Result extends Metricable {
 			}
 			artifact.calculate_Metrics();
 		}
+	}
+
+	public ArrayList<Component> getComponents() {
+		return components;
+	}
+
+	public Iterator<Entry<String, Artifact>> getArtifactsIterator() {
+		return artifacts.entrySet().iterator();
 	}
 }

@@ -12,70 +12,28 @@ public class Main {
 
 	public static void main(String[] args) throws IOException {
 
-		
-//	// <test java
-//	String progrLang = "java";
-//	String prjName = "test";
-//	String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\jcommander-main";
-//	String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-//	// >test end
-		
-//		// <test Cpp
-//		String progrLang = "c";
-//		String prjName = "test";
-//		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\rodinia-master";
-//		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-//		// >test end
-		
-		
-////		// <test java
-//		String progrLang = "java";
-//		String prjName = "test";
-//		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\jcommander-main";
-//		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-////		// >test end
-
-		// <test Cpp
-		String progrLang = "c";
-		String prjName = "test";
-		String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\kameleon2";
-		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-		// >test end
-
-		try {
-			DeRec.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);
-		} catch (Exception e) {
-			System.out.println("Error in main, durring test execution");
-			e.printStackTrace();
-			return;
+		if(args.length!=4) {
+			System.out.println("Wrong arguments. You must provide the following:"
+					+ "\n1: Programming language type (java, c, cpp)"
+					+ "\n2: A project name"
+					+ "\n3: The absolute path to the project's folder"
+					+ "\n3: The absolute path to the database's credentials file");
+			System.exit(1);
 		}
 
-		System.out.println("текос!");
-
-		// ---------------------------------------------------------------------------------------------------------------
-//		ArrayList<Artifact> classes = new ArrayList<Artifact>();
-//		  for(int i=0; i<30; i++) {
-//			  classes.add(new Artifact("Class_"+i+".java"));
-//		  }
-//		  DeRec_Individual indv = new DeRec_Individual(classes);
-//		  indv.recreateMeAsRandomIndividual();
-//		  
-//		  System.out.println("\nper Component:\n");
-//		  System.out.println(indv.toStringComps());
-//		  System.out.println("\nper Class:\n");
-//		  System.out.println(indv.toStringClasses());
-//		  
-//	    }
-
-		// ---------------------------------------------------------------------------------------------------------------
-//
-//	        MetricsCalculator.start("C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\SDK4ED\\_Tools\\Probability_To_Change_GUI - Package");
-//	        
-//
-//	        ClassMetricsContainer cont = MetricsCalculator.getClassMetricsContainer();
-//	        cont.test();
-//	        
-//
+		try {
+			boolean result = DeRec.start(args[0], args[1], args[2], args[3]);
+			if(!result) {
+				throw new Exception("The execution failed");
+			}
+			System.out.println("\n\n\nсысто текос!");
+			System.exit(0);
+		} catch (Exception e) {
+			System.out.println("Error in main, durring test execution");
+			System.out.println(e.getMessage());
+			System.out.println("\n\n\nкахос текос!");
+			System.exit(1);
+		}
 
 	}
 }

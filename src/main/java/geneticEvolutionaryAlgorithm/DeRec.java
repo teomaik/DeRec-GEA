@@ -1,15 +1,15 @@
 package geneticEvolutionaryAlgorithm;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import calculator.MetricsCalculator;
 import cppDepFinder.TestDep;
+import geneticEvolutionaryAlgorithm.database.DbController;
+import geneticEvolutionaryAlgorithm.utils.GEA_Result;
 import metrics.ClassMetrics;
 
 public class DeRec {
@@ -23,6 +23,12 @@ public class DeRec {
 			throw exc; // TODO Test this
 		}
 
+		DbController sqlCtrl = new DbController(pathToDbCredFile);
+		if(!sqlCtrl.isReady()) {
+			return false;
+		}
+		sqlCtrl.closeConn();
+		
 		switch (progrLang) {
 		case "java":
 			MetricsCalculator.start(pathToProjectFolder);
@@ -44,11 +50,26 @@ public class DeRec {
 		GEA gea = new GEA(artifactsWithDependencies);
 		boolean result = gea.startGEA();
 		
+		
 		if(result == false) {
 			System.out.println("Something went wrong during the execution");
+			return false;
+		}
+
+		sqlCtrl = new DbController(pathToDbCredFile);
+		if(!sqlCtrl.isReady()) {
+			return false;
 		}
 		
-		return true;
+		GEA_Result oldResult = gea.getOldResult();
+		GEA_Result newResult = gea.getNewResult();
+		System.out.println("\n\n------------------------------------------------------");
+		System.out.println("\n"+oldResult.toStringMetrics());
+		System.out.println("\n"+newResult.toStringMetrics());
+		
+		return sqlCtrl.insertIndividualsToDatabase(prjName, oldResult, newResult);
+
+//		return true;
 	}
 
 	//for MetricsCalculator (java projects)
@@ -81,7 +102,11 @@ public class DeRec {
 				|| langType.isEmpty() || langType.trim().length() == 0 || pathToProjectFolder == null
 				|| pathToProjectFolder.isEmpty() || pathToProjectFolder.trim().length() == 0 || pathToDbCredFile == null
 				|| pathToDbCredFile.isEmpty() || pathToDbCredFile.trim().length() == 0) {
-			return new Exception("Wrong arguments, agruments are empty or null");
+			return new Exception("Wrong arguments, agruments are empty or null. You should provide:"
+					+ "\n1: Programming language type (java, c, cpp)"
+					+ "\n2: A project name"
+					+ "\n3: The absolute path to the project's folder"
+					+ "\n3: The absolute path to the database's credentials file");
 		}
 		try {
 			File file = new File(pathToProjectFolder);

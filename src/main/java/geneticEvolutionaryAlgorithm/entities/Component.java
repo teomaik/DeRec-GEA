@@ -130,7 +130,7 @@ public class Component extends Metricable implements Comparable<Component> {
 	public String toString(int level, String path) {
 		String pronoun = "";
 		for (int i = 0; i < level; i++) {
-			pronoun += "\s";
+			pronoun += " ";
 		}
 		String ret = "";
 		ret += "\n" + pronoun + "+" + path + this.name;
@@ -147,7 +147,7 @@ public class Component extends Metricable implements Comparable<Component> {
 		while (it.hasNext()) {
 			i++;
 			Entry<String, Artifact> e = it.next();
-			ret += "\n" + pronoun + "\s" + i + ": " + e.getKey();
+			ret += "\n" + pronoun + " " + i + ": " + e.getKey();
 		}
 
 		return ret;

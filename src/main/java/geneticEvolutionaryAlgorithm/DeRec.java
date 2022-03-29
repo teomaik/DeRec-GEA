@@ -16,14 +16,14 @@ public class DeRec {
 	
 	private static Hashtable<String, ArrayList<String>> artifactsWithDependencies;
 	
-	public static boolean start(String progrLang, String prjName, String pathToProjectFolder, String pathToDbCredFile) throws Exception {
+	public static boolean start(String progrLang, String prjName, String pathToProjectFolder, String serverName, String databaseName, String username, String password) throws Exception {
 
-		Exception exc = checkArguments(progrLang, prjName, pathToProjectFolder, pathToDbCredFile); // TODO Test this
+		Exception exc = checkArguments(progrLang, prjName, pathToProjectFolder, serverName, databaseName); // TODO Test this
 		if (exc != null) {
 			throw exc; // TODO Test this
 		}
 
-		DbController sqlCtrl = new DbController(pathToDbCredFile);
+		DbController sqlCtrl = new DbController(serverName, databaseName, username, password);
 		if(!sqlCtrl.isReady()) {
 			return false;
 		}
@@ -56,7 +56,7 @@ public class DeRec {
 			return false;
 		}
 
-		sqlCtrl = new DbController(pathToDbCredFile);
+		sqlCtrl = new DbController(serverName, databaseName, username, password);
 		if(!sqlCtrl.isReady()) {
 			return false;
 		}
@@ -95,30 +95,23 @@ public class DeRec {
 		return ret;
 	}
 	
-	private static Exception checkArguments(String langType, String prjName, String pathToProjectFolder,
-			String pathToDbCredFile) {
+	private static Exception checkArguments(String langType, String prjName, String pathToProjectFolder, String serverName, String databaseName) {
 
-		if (prjName == null || prjName.isEmpty() || prjName.trim().length() == 0 || langType == null
-				|| langType.isEmpty() || langType.trim().length() == 0 || pathToProjectFolder == null
-				|| pathToProjectFolder.isEmpty() || pathToProjectFolder.trim().length() == 0 || pathToDbCredFile == null
-				|| pathToDbCredFile.isEmpty() || pathToDbCredFile.trim().length() == 0) {
+		if (prjName == null || prjName.isEmpty() || prjName.trim().length() == 0 
+				|| langType == null	|| langType.isEmpty() || langType.trim().length() == 0 
+				|| pathToProjectFolder == null || pathToProjectFolder.isEmpty() || pathToProjectFolder.trim().length() == 0 
+				|| serverName == null	|| serverName.isEmpty() || serverName.trim().length() == 0
+				|| databaseName == null	|| databaseName.isEmpty() || databaseName.trim().length() == 0) {
 			return new Exception("Wrong arguments, agruments are empty or null. You should provide:"
 					+ "\n1: Programming language type (java, c, cpp)"
 					+ "\n2: A project name"
 					+ "\n3: The absolute path to the project's folder"
-					+ "\n3: The absolute path to the database's credentials file");
+					+ "\n3: The server and the name and credentials for your database");
 		}
 		try {
 			File file = new File(pathToProjectFolder);
 			if (!file.isDirectory()) {
 				return new Exception("Project folder not found, path is invalid");
-			}
-			file = new File(pathToDbCredFile);
-			if (!file.exists()) {
-				return new Exception("File not found, path is invalid");
-			}
-			if (file.isDirectory()) {
-				return new Exception("Path is invalid, points to folder, not file");
 			}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

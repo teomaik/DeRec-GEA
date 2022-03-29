@@ -7,9 +7,6 @@ import geneticEvolutionaryAlgorithm.DeRec;
 public class TestMain {
 
 	public static void main(String[] args) throws IOException {
-
-		String pathToDbCredFile = "C:\\Users\\temp\\Documents\\GitHub\\Workspace\\UoM\\dbCredentials_uom.txt";
-		
 		
 		// <test java
 		String progrLang = "java";
@@ -29,19 +26,19 @@ public class TestMain {
 //			String pathToProjectFolder = "C:\\Users\\temp\\Downloads\\kameleon2";
 //			// >test end
 
-			try {
-				boolean result = DeRec.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);
-				if(!result) {
-					throw new Exception("The execution failed");
-				}
-				System.out.println("\n\n\nсысто текос!");
-				System.exit(0);
-			} catch (Exception e) {
-				System.out.println("Error in main, durring test execution");
-				System.out.println(e.getMessage());
-				System.out.println("\n\n\nкахос текос!");
-				System.exit(1);
-			}
+//			try {
+//				boolean result = DeRec.start(progrLang, prjName, pathToProjectFolder, pathToDbCredFile);
+//				if(!result) {
+//					throw new Exception("The execution failed");
+//				}
+//				System.out.println("\n\n\nсысто текос!");
+//				System.exit(0);
+//			} catch (Exception e) {
+//				System.out.println("Error in main, durring test execution");
+//				System.out.println(e.getMessage());
+//				System.out.println("\n\n\nкахос текос!");
+//				System.exit(1);
+//			}
 
 		}
 }

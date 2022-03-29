@@ -19,7 +19,7 @@ import geneticEvolutionaryAlgorithm.entities.Component;
 import geneticEvolutionaryAlgorithm.utils.GEA_Result;
 
 public class DbController {
-	
+
 	String path = "";
 	Connection conn = null;
 	MysqlDataSource dataSource = null;
@@ -27,10 +27,23 @@ public class DbController {
 	String password = null;
 	String serverName = null;
 	String databaseName = null;
-	
-	public DbController(String path) {
-		this.path = path;
-		conn = getConnection(path);
+
+//	public DbController(String path) {
+//		this.path = path;
+//		conn = getConnection(path);
+//		if (!this.isReady()) {
+//			System.out.println("Null Connection");
+//		} else {
+//			boolean ok = beginRUTransaction();
+//			if (!ok) {
+//				this.closeConn();
+//			}
+//		}
+//	}
+
+	public DbController(String serverName, String databaseName, String username, String password) {
+		conn = getConnection(serverName, databaseName, username, password);
+		
 		if (!this.isReady()) {
 			System.out.println("Null Connection");
 		} else {
@@ -41,8 +54,9 @@ public class DbController {
 		}
 	}
 	
+	
 	public boolean insertIndividualsToDatabase(String projectName, GEA_Result oldResult, GEA_Result newResult) throws Exception {
-		
+
 		boolean commit = true;
 		commit = deletePreviousInsertsOfProject(projectName);
 		if (!commit) {
@@ -63,23 +77,23 @@ public class DbController {
 		if (commit) {
 			commit &= insertClasses(projectName, newResult, true);
 		}
-		
+
 		if (!commit) {
 			System.out.println("Error, could not do necessary Database actions");
 			connRollBackAndClose();
 			return false;
 		}
-		
+
 		return this.connCommitAndClose();
 	}
-	
+
 	private boolean insertClasses(String projectName, GEA_Result indv, boolean isNew) {
 		try {
 			Iterator<Entry<String, Artifact>> it = indv.getArtifactsIterator();
 			while(it.hasNext()) {
 				Entry<String, Artifact> e = it.next();
 				Artifact art = e.getValue();
-				
+
 				//Checking if the class Component exists as an entry in the Database
 				String comp = art.getComponent().getName();
 				String query = "SELECT ID FROM gea_packages WHERE name=? AND isNew=? AND projectName=?";
@@ -97,7 +111,7 @@ public class DbController {
 				if (count != 1 || id == -1) {
 					return false;
 				}
-				
+
 				//creating query to insert the class to the Database
 				query = " insert into gea_classes (name, packageID, projectName, cohesion, coupling, isNew)"
 						+ " values (?, ?, ?, ?, ?, ?)";
@@ -137,7 +151,7 @@ public class DbController {
 			return false;
 		}
 	}
-	
+
 	private boolean insertProject(String projectName, GEA_Result indvOld, GEA_Result indvNew) {
 		try {
 			String query = " insert into gea_projects (name, coupling_old, cohesion_old, coupling_new, cohesion_new)"
@@ -156,7 +170,7 @@ public class DbController {
 			return false;
 		}
 	}
-	
+
 	public boolean deletePreviousInsertsOfProject(String projectName) {
 		if (projectName == null || projectName.isEmpty()) {
 			throw new IllegalArgumentException("Invalid values. They must not be null, empty or blank");
@@ -185,7 +199,7 @@ public class DbController {
 			return false;
 		}
 	}
-	
+
 	public void closeConn() {
 		try {
 			this.conn.close();
@@ -195,14 +209,14 @@ public class DbController {
 		}
 
 	}
-	
+
 	public boolean isReady() {
 		if (conn != null) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	private boolean beginRUTransaction() { // READ_UNCOMMITTED_SQL_TRANSACTION
 		if (!this.isReady()) {
 			return false;
@@ -249,7 +263,42 @@ public class DbController {
 			return false;
 		}
 	}
-	
+
+	private Connection getConnection(String serverName, String databaseName, String username, String password) {
+
+		boolean ok = false;
+
+		ok = true;
+
+		this.username = username;
+		this.password = password;
+		this.serverName = serverName;
+		this.databaseName = databaseName;
+
+		if (serverName == null || serverName.isEmpty() || 
+				databaseName == null || databaseName.isEmpty()) {
+			System.out.println("One or more of the Credentials given is null");
+			return null;
+		}
+
+
+		// <
+
+		String url = "jdbc:mysql://" + serverName + "/" + databaseName + "";
+
+		System.out.println("\n\n\nConnecting database...");
+
+		try {
+			Connection connection = DriverManager.getConnection(url, username, password);
+			System.out.println("Database connected!");
+			return connection;
+		} catch (SQLException e) {
+			System.out.println("Cannot connect the database!\n");
+			return null;
+		}
+		// >
+	}
+
 	private Connection getConnection(String path) {
 
 		if (path == null || path.isEmpty()) {
